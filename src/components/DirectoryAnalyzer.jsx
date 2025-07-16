@@ -1,5 +1,6 @@
 // src/components/DirectoryAnalyzer.jsx
 import React, { useState } from 'react';
+import { buildApiUrl, API_ENDPOINTS } from '../config/api';
 import styles from './DirectoryAnalyzer.module.css';
 
 function DirectoryAnalyzer({ onClose, onAnalysisComplete }) {
@@ -52,7 +53,7 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete }) {
             }));
 
             // Call the analyze endpoint
-            const analyzeResponse = await fetch('http://159.65.177.29:8000/directories/analyze', {
+            const analyzeResponse = await fetch(buildApiUrl(API_ENDPOINTS.DIRECTORIES.ANALYZE), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
