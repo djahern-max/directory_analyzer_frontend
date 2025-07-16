@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ApiTest from './ApiTest';
-import Login from './components/Login';
+import Login from './components/auth/Login';
 import UserHeader from './components/UserHeader';
 import './App.css';
 
