@@ -3,35 +3,36 @@
 .sidebar {
     width: 280px;
     min-width: 280px;
-    background-color: #202123;
-    color: white;
+    background-color: #f9f9f9;
+    color: #343541;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #565869;
+    border-right: 1px solid #e5e5e5;
     position: relative;
     z-index: 1;
 }
 
 .header {
-    padding: 12px;
-    border-bottom: 1px solid #565869;
+    padding: 8px;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .newButton {
     width: 100%;
-    padding: 12px;
+    padding: 10px 12px;
     background-color: transparent;
-    border: 1px solid #565869;
-    border-radius: 6px;
-    color: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    color: #343541;
     cursor: pointer;
     font-size: 14px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     transition: background-color 0.2s;
+    text-align: left;
 }
 
 .newButton:hover {
-    background-color: #343541;
+    background-color: #f0f0f0;
 }
 
 .newButton:last-child {
@@ -46,33 +47,34 @@
 }
 
 .sectionLabel {
-    padding: 12px;
+    padding: 8px 12px;
     font-size: 12px;
     font-weight: 600;
     color: #8e8ea0;
-    border-bottom: 1px solid #565869;
+    border-bottom: 1px solid #e5e5e5;
 }
 
 .contractsList {
     flex: 1;
     overflow-y: auto;
-    padding: 8px;
+    padding: 4px 8px;
 }
 
 .contractItem {
-    padding: 12px;
+    padding: 10px 12px;
     cursor: pointer;
-    border-radius: 6px;
-    margin-bottom: 4px;
+    border-radius: 8px;
+    margin-bottom: 2px;
     transition: background-color 0.2s;
 }
 
 .contractItem:hover {
-    background-color: #343541;
+    background-color: #f0f0f0;
 }
 
 .contractItem.selected {
-    background-color: #343541;
+    background-color: #e8f4fd;
+    border: 1px solid #b8daff;
 }
 
 .contractName {
@@ -82,6 +84,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 14px;
+    color: #343541;
 }
 
 .contractMeta {
@@ -111,12 +114,14 @@
 
 .userSection {
     padding: 12px;
-    border-top: 1px solid #565869;
+    border-top: 1px solid #e5e5e5;
+    margin-top: auto;
 }
 
 .userName {
     font-weight: 500;
     margin-bottom: 4px;
+    color: #343541;
 }
 
 .userCredits {
@@ -127,16 +132,16 @@
 
 .logoutButton {
     background: transparent;
-    border: 1px solid #565869;
+    border: 1px solid #e5e5e5;
     color: #8e8ea0;
     padding: 6px 12px;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 12px;
     transition: all 0.2s;
 }
 
 .logoutButton:hover {
-    background-color: #343541;
-    color: white;
+    background-color: #f0f0f0;
+    color: #343541;
 }
