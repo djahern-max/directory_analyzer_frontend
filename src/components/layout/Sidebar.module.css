@@ -8,13 +8,14 @@
     display: flex;
     flex-direction: column;
     border-right: 1px solid #e5e5e5;
-    position: relative;
-    z-index: 1;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .header {
     padding: 8px;
     border-bottom: 1px solid #e5e5e5;
+    flex-shrink: 0;
 }
 
 .newButton {
@@ -44,6 +45,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 .sectionLabel {
@@ -52,6 +54,7 @@
     font-weight: 600;
     color: #8e8ea0;
     border-bottom: 1px solid #e5e5e5;
+    flex-shrink: 0;
 }
 
 .contractsList {
@@ -115,7 +118,8 @@
 .userSection {
     padding: 12px;
     border-top: 1px solid #e5e5e5;
-    margin-top: auto;
+    flex-shrink: 0;
+    background-color: #f9f9f9;
 }
 
 .userName {
