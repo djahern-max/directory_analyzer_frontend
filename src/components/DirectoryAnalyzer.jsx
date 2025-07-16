@@ -43,29 +43,47 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete }) {
         setIsAnalyzing(true);
 
         try {
-            // First, call the list endpoint to get file structure
-            const selectedFileList = Array.from(selectedFiles).map(index => ({
-                name: files[index].name,
-                path: files[index].webkitRelativePath || files[index].name,
-                size: files[index].size,
-                type: files[index].type,
-                lastModified: files[index].lastModified
-            }));
+            // Get the directory path from the first file's webkitRelativePath
+            const firstFile = files[0];
+            const directoryPath = firstFile.webkitRelativePath
+                ? firstFile.webkitRelativePath.split('/')[0]
+                : 'uploaded-folder';
 
-            // Call the analyze endpoint
+            console.log('Sending request with directory_path:', directoryPath);
+
+            // Try the list endpoint first to see what format is expected
+            const listResponse = await fetch(buildApiUrl(API_ENDPOINTS.DIRECTORIES.LIST), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    directory_path: directoryPath
+                })
+            });
+
+            if (listResponse.ok) {
+                const listData = await listResponse.json();
+                console.log('List response:', listData);
+            } else {
+                console.log('List endpoint failed:', await listResponse.text());
+            }
+
+            // Call the analyze endpoint with the correct format
             const analyzeResponse = await fetch(buildApiUrl(API_ENDPOINTS.DIRECTORIES.ANALYZE), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    files: selectedFileList,
-                    directory_path: files[0]?.webkitRelativePath?.split('/')[0] || 'uploaded-folder'
+                    directory_path: directoryPath
                 })
             });
 
             if (!analyzeResponse.ok) {
-                throw new Error(`Analysis failed: ${analyzeResponse.status}`);
+                const errorData = await analyzeResponse.text();
+                console.log('Analyze error response:', errorData);
+                throw new Error(`Analysis failed: ${analyzeResponse.status} - ${errorData}`);
             }
 
             const results = await analyzeResponse.json();
