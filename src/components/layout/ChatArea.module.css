@@ -1,0 +1,210 @@
+/* src/components/layout/ChatArea.module.css */
+
+.welcomeArea {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    padding: 20px;
+}
+
+.welcomeContent {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+}
+
+.welcomeTitle {
+    font-size: 32px;
+    font-weight: 400;
+    color: #343541;
+    margin-bottom: 32px;
+}
+
+.featureCards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.featureCard {
+    padding: 20px;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #f9f9f9;
+    text-align: left;
+}
+
+.featureCard:hover {
+    background-color: #f0f0f0;
+    border-color: #d1d5db;
+}
+
+.cardIcon {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.cardTitle {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #343541;
+}
+
+.cardDesc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.chatArea {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+}
+
+.chatHeader {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e5e5;
+    background-color: #f9f9f9;
+}
+
+.contractTitle {
+    font-weight: 600;
+    font-size: 16px;
+    color: #343541;
+}
+
+.contractMeta {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.messagesArea {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.message {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.initialMessage {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.messageAvatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #10a37f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.messageContent {
+    flex: 1;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    color: #343541;
+}
+
+.loadingDots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.loadingDots div {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #666;
+    animation: pulse 1.5s infinite;
+}
+
+.loadingDots div:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.loadingDots div:nth-child(3) {
+    animation-delay: 1s;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.inputArea {
+    padding: 20px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.inputContainer {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.messageInput {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 1.4;
+    resize: none;
+    min-height: 48px;
+    max-height: 200px;
+    font-family: inherit;
+}
+
+.messageInput:focus {
+    outline: none;
+    border-color: #10a37f;
+}
+
+.sendButton {
+    padding: 12px 24px;
+    background-color: #10a37f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.sendButton:hover:not(:disabled) {
+    background-color: #0d8f6f;
+}
+
+.sendButton:disabled {
+    background-color: #e5e5e5;
+    color: #999;
+    cursor: not-allowed;
+}

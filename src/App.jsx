@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import ApiTest from './ApiTest';
 import Login from './components/auth/Login';
-import UserHeader from './components/UserHeader';
+import ChatLayout from './components/layout/ChatLayout';
 import './App.css';
 
 function App() {
@@ -70,14 +69,7 @@ function App() {
   }
 
   return (
-    <>
-      <UserHeader user={user} onLogout={handleLogout} />
-      <div style={{ padding: '2rem' }}>
-        <h1>Directory Analyzer</h1>
-        <p>Construction Document Analysis System</p>
-        <ApiTest user={user} />
-      </div>
-    </>
+    <ChatLayout user={user} onLogout={handleLogout} />
   );
 }
 
