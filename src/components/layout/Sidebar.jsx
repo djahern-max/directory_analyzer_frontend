@@ -39,13 +39,13 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
             {/* Mobile Hamburger Button */}
             {isMobile && (
                 <button
-                    className={styles.hamburgerButton}
+                    className={`${styles.hamburgerButton} ${isOpen ? styles.hidden : ''}`}
                     onClick={toggleSidebar}
-                    aria-label="Toggle menu"
+                    aria-label="Open menu"
                 >
-                    <div className={`${styles.hamburgerLine} ${isOpen ? styles.open : ''}`}></div>
-                    <div className={`${styles.hamburgerLine} ${isOpen ? styles.open : ''}`}></div>
-                    <div className={`${styles.hamburgerLine} ${isOpen ? styles.open : ''}`}></div>
+                    <div className={styles.hamburgerLine}></div>
+                    <div className={styles.hamburgerLine}></div>
+                    <div className={styles.hamburgerLine}></div>
                 </button>
             )}
 

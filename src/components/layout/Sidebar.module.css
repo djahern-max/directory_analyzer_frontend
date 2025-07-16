@@ -16,48 +16,43 @@
 /* Mobile hamburger button */
 .hamburgerButton {
     position: fixed;
-    top: 16px;
-    left: 16px;
+    top: 12px;
+    left: 12px;
     z-index: 1001;
-    background: #f9f9f9;
-    border: 1px solid #e5e5e5;
-    border-radius: 6px;
+    background: transparent;
+    border: none;
     padding: 8px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    gap: 3px;
-    width: 40px;
-    height: 40px;
+    gap: 2px;
+    width: 32px;
+    height: 32px;
     justify-content: center;
     align-items: center;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease;
+    border-radius: 4px;
 }
 
 .hamburgerButton:hover {
-    background-color: #f0f0f0;
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Hamburger lines */
+/* Hide hamburger when sidebar is open on mobile */
+@media (max-width: 767px) {
+    .hamburgerButton.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+/* Hamburger lines - ChatGPT style */
 .hamburgerLine {
-    width: 18px;
-    height: 2px;
+    width: 16px;
+    height: 1.5px;
     background-color: #343541;
-    transition: all 0.3s ease;
-    transform-origin: center;
-}
-
-/* Animated hamburger to X */
-.hamburgerLine.open:nth-child(1) {
-    transform: translateY(5px) rotate(45deg);
-}
-
-.hamburgerLine.open:nth-child(2) {
-    opacity: 0;
-}
-
-.hamburgerLine.open:nth-child(3) {
-    transform: translateY(-5px) rotate(-45deg);
+    transition: all 0.2s ease;
+    border-radius: 1px;
 }
 
 /* Mobile overlay */
