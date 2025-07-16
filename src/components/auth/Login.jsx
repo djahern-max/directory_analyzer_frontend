@@ -6,7 +6,6 @@ function Login() {
 
     const handleGoogleLogin = () => {
         setIsLoading(true);
-        // Redirect to your backend auth endpoint
         window.location.href = 'https://pdfcontractanalyzer.com/auth/google';
     };
 
@@ -17,27 +16,23 @@ function Login() {
 
             </div>
 
-            <div className={styles.loginCard}>
-
-
-                <button
-                    onClick={handleGoogleLogin}
-                    disabled={isLoading}
-                    className={styles.googleButton}
-                >
-                    {isLoading ? (
-                        <>
-                            <div className={styles.loadingSpinner}></div>
-                            Signing in...
-                        </>
-                    ) : (
-                        <>
-                            <div className={styles.googleIcon}></div>
-                            Sign in with Google
-                        </>
-                    )}
-                </button>
-            </div>
+            <button
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+                className={styles.googleButton}
+            >
+                {isLoading ? (
+                    <>
+                        <div className={styles.loadingSpinner}></div>
+                        Signing in...
+                    </>
+                ) : (
+                    <>
+                        <div className={styles.googleIcon}></div>
+                        Sign in with Google
+                    </>
+                )}
+            </button>
         </div>
     );
 }

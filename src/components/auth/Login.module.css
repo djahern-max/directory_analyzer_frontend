@@ -5,8 +5,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 60vh;
-    gap: 2rem;
+    min-height: 100vh;
+    gap: 3rem;
     padding: 2rem;
 }
 
@@ -15,37 +15,16 @@
 }
 
 .title {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 600;
     color: #1a1a1a;
     margin-bottom: 0.5rem;
 }
 
 .subtitle {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: #666;
     margin: 0;
-}
-
-.loginCard {
-    background: transparent;
-    padding: 2rem;
-    min-width: 350px;
-    text-align: center;
-}
-
-.cardTitle {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 0.5rem;
-}
-
-.cardDescription {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 2rem;
-    line-height: 1.4;
 }
 
 .googleButton {
@@ -53,7 +32,6 @@
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    width: 100%;
     padding: 0.75rem 1.5rem;
     background: #4285f4;
     color: white;
@@ -64,19 +42,12 @@
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: inherit;
-    text-decoration: none;
-    outline: none;
 }
 
 .googleButton:hover {
     background: #3367d6;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
-}
-
-.googleButton:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
 }
 
 .googleButton:disabled {
@@ -124,26 +95,5 @@
 
     100% {
         transform: rotate(360deg);
-    }
-}
-
-/* Responsive design */
-@media (max-width: 640px) {
-    .container {
-        padding: 1rem;
-        gap: 1.5rem;
-    }
-
-    .title {
-        font-size: 2rem;
-    }
-
-    .loginCard {
-        min-width: 300px;
-        padding: 1.5rem;
-    }
-
-    .googleButton {
-        padding: 0.875rem 1.5rem;
     }
 }
