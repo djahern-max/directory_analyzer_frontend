@@ -1,55 +1,123 @@
 // src/components/layout/Sidebar.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Sidebar.module.css';
 
 function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkScreenSize = () => {
+            setIsMobile(window.innerWidth < 768);
+            if (window.innerWidth >= 768) {
+                setIsOpen(false); // Close mobile menu when switching to desktop
+            }
+        };
+
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+        return () => window.removeEventListener('resize', checkScreenSize);
+    }, []);
+
+    const toggleSidebar = () => {
+        setIsOpen(!isOpen);
+    };
+
+    const closeSidebar = () => {
+        setIsOpen(false);
+    };
+
+    const handleContractSelect = (contract) => {
+        onSelectContract(contract);
+        if (isMobile) {
+            closeSidebar();
+        }
+    };
+
     return (
-        <div className={styles.sidebar}>
-            {/* Header Actions */}
-            <div className={styles.header}>
-                <button className={styles.newButton}>
-                    📄 Upload Contract
+        <>
+            {/* Mobile Hamburger Button */}
+            {isMobile && (
+                <button
+                    className={styles.hamburgerButton}
+                    onClick={toggleSidebar}
+                    aria-label="Toggle menu"
+                >
+                    <div className={`${styles.hamburgerLine} ${isOpen ? styles.open : ''}`}></div>
+                    <div className={`${styles.hamburgerLine} ${isOpen ? styles.open : ''}`}></div>
+                    <div className={`${styles.hamburgerLine} ${isOpen ? styles.open : ''}`}></div>
                 </button>
-                <button className={styles.newButton}>
-                    📁 Analyze Directory
-                </button>
-            </div>
+            )}
 
-            {/* Contracts List */}
-            <div className={styles.contractsSection}>
-                <div className={styles.sectionLabel}>CONTRACTS</div>
+            {/* Mobile Overlay */}
+            {isMobile && isOpen && (
+                <div
+                    className={styles.overlay}
+                    onClick={closeSidebar}
+                />
+            )}
 
-                <div className={styles.contractsList}>
-                    {contracts.map(contract => (
-                        <div
-                            key={contract.id}
-                            onClick={() => onSelectContract(contract)}
-                            className={`${styles.contractItem} ${selectedContract?.id === contract.id ? styles.selected : ''
-                                }`}
+            {/* Sidebar */}
+            <div className={`${styles.sidebar} ${isMobile ? styles.mobile : ''} ${isOpen ? styles.open : ''}`}>
+                {/* Mobile Header with Close Button */}
+                {isMobile && (
+                    <div className={styles.mobileHeader}>
+                        <button
+                            className={styles.closeButton}
+                            onClick={closeSidebar}
+                            aria-label="Close menu"
                         >
-                            <div className={styles.contractName}>{contract.name}</div>
-                            <div className={styles.contractMeta}>
-                                <span>#{contract.jobNumber}</span>
-                                <span className={`${styles.status} ${styles[contract.status]}`}>
-                                    {contract.status}
-                                </span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                            ✕
+                        </button>
+                    </div>
+                )}
 
-            {/* User Info */}
-            <div className={styles.userSection}>
-                <div className={styles.userName}>{user.name}</div>
-                <div className={styles.userCredits}>
-                    Credits: ${user.credits_remaining?.toFixed(2) || '0.00'}
+                {/* Header Actions */}
+                <div className={styles.header}>
+                    <button className={styles.newButton}>
+                        📄 Upload Contract
+                    </button>
+                    <button className={styles.newButton}>
+                        📁 Analyze Directory
+                    </button>
                 </div>
-                <button onClick={onLogout} className={styles.logoutButton}>
-                    Sign Out
-                </button>
+
+                {/* Contracts List */}
+                <div className={styles.contractsSection}>
+                    <div className={styles.sectionLabel}>CONTRACTS</div>
+
+                    <div className={styles.contractsList}>
+                        {contracts.map(contract => (
+                            <div
+                                key={contract.id}
+                                onClick={() => handleContractSelect(contract)}
+                                className={`${styles.contractItem} ${selectedContract?.id === contract.id ? styles.selected : ''
+                                    }`}
+                            >
+                                <div className={styles.contractName}>{contract.name}</div>
+                                <div className={styles.contractMeta}>
+                                    <span>#{contract.jobNumber}</span>
+                                    <span className={`${styles.status} ${styles[contract.status]}`}>
+                                        {contract.status}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* User Info */}
+                <div className={styles.userSection}>
+                    <div className={styles.userName}>{user.name}</div>
+                    <div className={styles.userCredits}>
+                        Credits: ${user.credits_remaining?.toFixed(2) || '0.00'}
+                    </div>
+                    <button onClick={onLogout} className={styles.logoutButton}>
+                        Sign Out
+                    </button>
+                </div>
             </div>
-        </div>
+        </>
     );
 }
 
