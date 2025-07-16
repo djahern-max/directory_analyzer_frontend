@@ -1,10 +1,12 @@
 // src/components/layout/Sidebar.jsx
 import React, { useState, useEffect } from 'react';
+import DirectoryAnalyzer from '../DirectoryAnalyzer';
 import styles from './Sidebar.module.css';
 
 function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [showDirectoryAnalyzer, setShowDirectoryAnalyzer] = useState(false);
 
     useEffect(() => {
         const checkScreenSize = () => {
@@ -32,6 +34,12 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
         if (isMobile) {
             closeSidebar();
         }
+    };
+
+    const handleAnalysisComplete = (results) => {
+        console.log('Directory analysis results:', results);
+        // Here you would typically save the results and create new contract entries
+        // For now, we'll just log them
     };
 
     return (
@@ -77,7 +85,10 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                     <button className={styles.newButton}>
                         📄 Upload Contract
                     </button>
-                    <button className={styles.newButton}>
+                    <button
+                        className={styles.newButton}
+                        onClick={() => setShowDirectoryAnalyzer(true)}
+                    >
                         📁 Analyze Directory
                     </button>
                 </div>
@@ -117,6 +128,14 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                     </button>
                 </div>
             </div>
+
+            {/* Directory Analyzer Modal */}
+            {showDirectoryAnalyzer && (
+                <DirectoryAnalyzer
+                    onClose={() => setShowDirectoryAnalyzer(false)}
+                    onAnalysisComplete={handleAnalysisComplete}
+                />
+            )}
         </>
     );
 }
