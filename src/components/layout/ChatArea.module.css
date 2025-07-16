@@ -7,12 +7,14 @@
     justify-content: center;
     background-color: white;
     padding: 20px;
+    width: 100%;
 }
 
 .welcomeContent {
     max-width: 800px;
     width: 100%;
     text-align: center;
+    margin: 0 auto;
 }
 
 .welcomeTitle {
@@ -32,6 +34,8 @@
     display: flex;
     flex-direction: column;
     background-color: white;
+    width: 100%;
+    overflow: hidden;
 }
 
 .chatHeader {

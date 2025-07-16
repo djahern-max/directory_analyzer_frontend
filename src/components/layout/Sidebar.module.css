@@ -2,11 +2,14 @@
 
 .sidebar {
     width: 280px;
+    min-width: 280px;
     background-color: #202123;
     color: white;
     display: flex;
     flex-direction: column;
     border-right: 1px solid #565869;
+    position: relative;
+    z-index: 1;
 }
 
 .header {
