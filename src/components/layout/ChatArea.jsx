@@ -39,29 +39,23 @@ function ChatArea({ selectedContract, user }) {
                 <div className={styles.welcomeContent}>
                     <h1 className={styles.welcomeTitle}>What contract can I help with?</h1>
 
-                    <div className={styles.featureCards}>
-                        <div className={styles.featureCard}>
-                            <div className={styles.cardIcon}>📋</div>
-                            <div className={styles.cardTitle}>Analyze Terms</div>
-                            <div className={styles.cardDesc}>Review key contract terms and conditions</div>
-                        </div>
-
-                        <div className={styles.featureCard}>
-                            <div className={styles.cardIcon}>💰</div>
-                            <div className={styles.cardTitle}>Payment Analysis</div>
-                            <div className={styles.cardDesc}>Understand payment schedules and amounts</div>
-                        </div>
-
-                        <div className={styles.featureCard}>
-                            <div className={styles.cardIcon}>📅</div>
-                            <div className={styles.cardTitle}>Important Dates</div>
-                            <div className={styles.cardDesc}>Find deadlines and milestone dates</div>
-                        </div>
-
-                        <div className={styles.featureCard}>
-                            <div className={styles.cardIcon}>⚠️</div>
-                            <div className={styles.cardTitle}>Risk Assessment</div>
-                            <div className={styles.cardDesc}>Identify potential risks and liabilities</div>
+                    <div className={styles.inputSection}>
+                        <div className={styles.inputContainer}>
+                            <textarea
+                                value={inputMessage}
+                                onChange={(e) => setInputMessage(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                placeholder="Ask anything"
+                                className={styles.messageInput}
+                                rows={1}
+                            />
+                            <button
+                                onClick={handleSendMessage}
+                                disabled={!inputMessage.trim() || isLoading}
+                                className={styles.sendButton}
+                            >
+                                Send
+                            </button>
                         </div>
                     </div>
                 </div>
