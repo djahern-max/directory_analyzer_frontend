@@ -8,11 +8,27 @@ function PremiumPricingModal({ onClose, onSubscribe, user }) {
     const handleSubscribe = async () => {
         setIsProcessing(true);
         try {
-            await onSubscribe();
+            // Call backend to create Stripe checkout session
+            const response = await fetch('https://pdfcontractanalyzer.com/api/payments/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create checkout session');
+            }
+
+            const { checkout_url } = await response.json();
+
+            // Redirect to Stripe checkout
+            window.location.href = checkout_url;
+
         } catch (error) {
             console.error('Subscription failed:', error);
-            alert('Subscription failed. Please try again.');
-        } finally {
+            alert('Failed to start checkout. Please try again.');
             setIsProcessing(false);
         }
     };
@@ -53,7 +69,7 @@ function PremiumPricingModal({ onClose, onSubscribe, user }) {
                             disabled={isProcessing}
                             className={styles.subscribeButton}
                         >
-                            {isProcessing ? 'Processing...' : 'Subscribe'}
+                            {isProcessing ? 'Loading...' : 'Subscribe'}
                         </button>
                     </div>
                 </div>
