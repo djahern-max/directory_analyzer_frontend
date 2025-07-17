@@ -23,9 +23,9 @@ function PremiumPricingModal({ onClose, onSubscribe, user }) {
                 <button onClick={onClose} className={styles.closeButton}>✕</button>
 
                 <div className={styles.content}>
-                    <div className={styles.icon}>🔒</div>
-                    <h2>Upgrade to Premium</h2>
-                    <p>Advanced contract analysis requires a premium subscription.</p>
+                    <div className={styles.icon}>📄</div>
+                    <h2>Contract Analysis</h2>
+                    <p>Store your contracts in one secure location and access AI analysis and interpretation on demand whenever you want.</p>
 
                     <div className={styles.price}>
                         <span className={styles.amount}>$149</span>
@@ -34,13 +34,13 @@ function PremiumPricingModal({ onClose, onSubscribe, user }) {
 
                     <div className={styles.features}>
                         <div className={styles.feature}>
-                            <span>✓</span> Unlimited contract analysis
+                            <span>✓</span> Secure contract storage
                         </div>
                         <div className={styles.feature}>
-                            <span>✓</span> AI-powered insights
+                            <span>✓</span> On-demand AI analysis
                         </div>
                         <div className={styles.feature}>
-                            <span>✓</span> Secure cloud storage
+                            <span>✓</span> Unlimited access
                         </div>
                     </div>
 
@@ -51,9 +51,9 @@ function PremiumPricingModal({ onClose, onSubscribe, user }) {
                         <button
                             onClick={handleSubscribe}
                             disabled={isProcessing}
-                            className={styles.upgradeButton}
+                            className={styles.subscribeButton}
                         >
-                            {isProcessing ? 'Processing...' : 'Upgrade'}
+                            {isProcessing ? 'Processing...' : 'Subscribe'}
                         </button>
                     </div>
                 </div>

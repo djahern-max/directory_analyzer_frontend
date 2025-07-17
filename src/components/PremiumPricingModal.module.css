@@ -138,7 +138,7 @@
     color: #374151;
 }
 
-.upgradeButton {
+.subscribeButton {
     flex: 2;
     background: #10b981;
     color: white;
@@ -151,11 +151,11 @@
     transition: all 0.2s;
 }
 
-.upgradeButton:hover:not(:disabled) {
+.subscribeButton:hover:not(:disabled) {
     background: #059669;
 }
 
-.upgradeButton:disabled {
+.subscribeButton:disabled {
     opacity: 0.7;
     cursor: not-allowed;
 }
@@ -180,7 +180,7 @@
     }
 
     .cancelButton,
-    .upgradeButton {
+    .subscribeButton {
         flex: none;
     }
 }
