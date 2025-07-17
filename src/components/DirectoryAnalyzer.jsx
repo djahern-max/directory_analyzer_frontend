@@ -42,8 +42,8 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
             return;
         }
 
-        // Check if user has premium subscription
-        if (!user.hasPremiumSubscription) {
+        // Check user subscription status first (frontend check for UX)
+        if (!user?.hasPremiumSubscription) {
             setShowPricingModal(true);
             return;
         }
@@ -75,6 +75,34 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
                 body: formData
             });
 
+            // Handle authentication and premium subscription errors
+            if (uploadResponse.status === 401) {
+                alert('Please log in to continue');
+                return;
+            }
+
+            if (uploadResponse.status === 402) {
+                const errorData = await uploadResponse.json();
+                if (errorData.detail?.error === 'premium_subscription_required') {
+                    setShowPricingModal(true);
+                    return;
+                }
+            }
+
+            if (uploadResponse.status === 403) {
+                const errorData = await uploadResponse.json();
+                console.log('403 Error details:', errorData);
+                // This might be a premium check that's returning 403 instead of 402
+                if (errorData.message?.includes('premium') || errorData.message?.includes('subscription')) {
+                    setShowPricingModal(true);
+                    return;
+                } else {
+                    // This is likely the premium check - show modal
+                    setShowPricingModal(true);
+                    return;
+                }
+            }
+
             if (!uploadResponse.ok) {
                 const uploadError = await uploadResponse.text();
                 throw new Error(`File upload failed: ${uploadResponse.status} - ${uploadError}`);
@@ -97,6 +125,23 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
                 })
             });
 
+            // Handle premium subscription errors from backend
+            if (analyzeResponse.status === 402) {
+                const errorData = await analyzeResponse.json();
+                if (errorData.detail?.error === 'premium_subscription_required') {
+                    setShowPricingModal(true);
+                    return;
+                }
+            }
+
+            if (analyzeResponse.status === 403) {
+                const errorData = await analyzeResponse.json();
+                console.log('Analyze 403 Error details:', errorData);
+                // Show premium modal for 403 errors too (until backend is fixed)
+                setShowPricingModal(true);
+                return;
+            }
+
             if (!analyzeResponse.ok) {
                 const errorData = await analyzeResponse.text();
                 console.log('Analyze error response:', errorData);
@@ -108,21 +153,7 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
 
         } catch (error) {
             console.error('Analysis error:', error);
-
-            if (error.message.includes('upload failed') || error.message.includes('404')) {
-                alert(`The file upload feature needs to be implemented on the backend. 
-                
-Current issue: Your API expects server-side directories, but we're uploading from browser.
-
-Possible solutions:
-1. Add a '/directories/upload' endpoint to receive files
-2. Modify '/directories/analyze' to accept file uploads directly
-3. Set up a file drop area on your server
-
-Error: ${error.message}`);
-            } else {
-                alert(`Analysis failed: ${error.message}`);
-            }
+            alert(`Analysis failed: ${error.message}`);
         } finally {
             setIsAnalyzing(false);
         }
@@ -291,6 +322,4 @@ Error: ${error.message}`);
         </>
     );
 }
-
-
 export default DirectoryAnalyzer;
