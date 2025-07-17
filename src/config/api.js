@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
     DIRECTORIES: {
         LIST: '/directories/list',
         ANALYZE: '/directories/analyze',
+        UPLOAD: '/directories/upload',
         IDENTIFY_MAIN: '/directories/identify-main-contract',
         SERVICE_STATUS: '/directories/service-status'
     },
