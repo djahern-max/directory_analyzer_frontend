@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Login from './components/auth/Login';
 import ChatLayout from './components/layout/ChatLayout';
-import { usePremiumStatus } from './hooks/usePremiumStatus';
+import { usePremiumStatus } from './hooks/usePremium';
 import './App.css';
 
 function App() {
