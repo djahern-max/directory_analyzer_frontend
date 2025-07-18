@@ -1,4 +1,4 @@
-// src/components/DirectoryAnalyzer.jsx - Clean version without console logs
+// src/components/DirectoryAnalyzer.jsx - Improved premium checking
 import React, { useState } from 'react';
 import { buildApiUrl, API_ENDPOINTS } from '../config/api';
 import PremiumPricingModal from './PremiumPricingModal';
@@ -51,19 +51,21 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
         }
 
         // First check premium status from user object
-        if (!checkPremiumStatus()) {
-            // Try to refresh premium status first
-            if (refreshPremiumStatus) {
-                const hasPremium = await refreshPremiumStatus();
-                if (!hasPremium) {
-                    setShowPricingModal(true);
-                    return;
-                }
-                // If premium status was refreshed successfully, continue with analysis
-            } else {
-                setShowPricingModal(true);
-                return;
+        let hasPremium = checkPremiumStatus();
+
+        // If user doesn't appear to have premium, try refreshing status first
+        if (!hasPremium && refreshPremiumStatus) {
+            try {
+                hasPremium = await refreshPremiumStatus();
+            } catch (error) {
+                // If refresh fails, continue with current status
             }
+        }
+
+        // If still no premium status, show pricing modal
+        if (!hasPremium) {
+            setShowPricingModal(true);
+            return;
         }
 
         setIsAnalyzing(true);
@@ -96,15 +98,17 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
 
             // Handle premium subscription errors from backend
             if (uploadResponse.status === 402 || uploadResponse.status === 403) {
-                const errorData = await uploadResponse.json().catch(() => ({}));
-
-                // Try refreshing premium status one more time
+                // Backend says no premium - try one more refresh and then show pricing
                 if (refreshPremiumStatus) {
-                    const hasPremium = await refreshPremiumStatus();
-                    if (hasPremium) {
-                        // Retry the request with refreshed status
-                        setIsAnalyzing(false);
-                        return analyzeDirectory(); // Recursive call with fresh status
+                    try {
+                        const refreshedPremium = await refreshPremiumStatus();
+                        if (refreshedPremium) {
+                            // Retry the request with refreshed status
+                            setIsAnalyzing(false);
+                            return analyzeDirectory(); // Recursive call with fresh status
+                        }
+                    } catch (error) {
+                        // Refresh failed, show pricing modal
                     }
                 }
 
@@ -135,7 +139,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
 
             // Handle premium subscription errors from analysis endpoint
             if (analyzeResponse.status === 402 || analyzeResponse.status === 403) {
-                const errorData = await analyzeResponse.json().catch(() => ({}));
                 setShowPricingModal(true);
                 return;
             }
