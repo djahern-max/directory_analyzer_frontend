@@ -1,4 +1,4 @@
-// src/components/DirectoryAnalyzer.jsx - Updated with better premium checking
+// src/components/DirectoryAnalyzer.jsx - Clean version without console logs
 import React, { useState } from 'react';
 import { buildApiUrl, API_ENDPOINTS } from '../config/api';
 import PremiumPricingModal from './PremiumPricingModal';
@@ -36,17 +36,11 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
     };
 
     const checkPremiumStatus = () => {
-        console.log('Checking premium status for user:', user);
-        console.log('has_premium:', user?.has_premium);
-        console.log('hasPremiumSubscription:', user?.hasPremiumSubscription);
-        console.log('subscription_status:', user?.subscription_status);
-
         // Multiple ways to check premium status for compatibility
         const hasPremium = user?.hasPremiumSubscription ||
             user?.has_premium ||
             (user?.subscription_status === 'active');
 
-        console.log('Final premium check result:', hasPremium);
         return hasPremium;
     };
 
@@ -58,8 +52,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
 
         // First check premium status from user object
         if (!checkPremiumStatus()) {
-            console.log('Premium check failed, checking with server...');
-
             // Try to refresh premium status first
             if (refreshPremiumStatus) {
                 const hasPremium = await refreshPremiumStatus();
@@ -88,8 +80,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             const directoryName = files[0]?.webkitRelativePath?.split('/')[0] || 'uploaded-folder';
             formData.append('directory_name', directoryName);
 
-            console.log('Uploading files for directory:', directoryName);
-
             const uploadResponse = await fetch(buildApiUrl(API_ENDPOINTS.DIRECTORIES.UPLOAD), {
                 method: 'POST',
                 headers: {
@@ -107,14 +97,12 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             // Handle premium subscription errors from backend
             if (uploadResponse.status === 402 || uploadResponse.status === 403) {
                 const errorData = await uploadResponse.json().catch(() => ({}));
-                console.log('Backend premium check failed:', errorData);
 
                 // Try refreshing premium status one more time
                 if (refreshPremiumStatus) {
                     const hasPremium = await refreshPremiumStatus();
                     if (hasPremium) {
                         // Retry the request with refreshed status
-                        console.log('Premium status refreshed, retrying upload...');
                         setIsAnalyzing(false);
                         return analyzeDirectory(); // Recursive call with fresh status
                     }
@@ -130,7 +118,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             }
 
             const uploadResult = await uploadResponse.json();
-            console.log('Upload result:', uploadResult);
 
             // Step 2: Analyze using the uploaded directory path
             const serverDirectoryPath = uploadResult.directory_path || directoryName;
@@ -149,14 +136,12 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             // Handle premium subscription errors from analysis endpoint
             if (analyzeResponse.status === 402 || analyzeResponse.status === 403) {
                 const errorData = await analyzeResponse.json().catch(() => ({}));
-                console.log('Analysis premium check failed:', errorData);
                 setShowPricingModal(true);
                 return;
             }
 
             if (!analyzeResponse.ok) {
                 const errorData = await analyzeResponse.text();
-                console.log('Analyze error response:', errorData);
                 throw new Error(`Analysis failed: ${analyzeResponse.status} - ${errorData}`);
             }
 
@@ -164,7 +149,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             setAnalysisResults(results);
 
         } catch (error) {
-            console.error('Analysis error:', error);
             alert(`Analysis failed: ${error.message}`);
         } finally {
             setIsAnalyzing(false);
@@ -205,8 +189,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
 
     const handleSubscribe = async () => {
         try {
-            console.log('Starting subscription process for user:', user.id);
-
             // Create checkout session
             const response = await fetch('https://pdfcontractanalyzer.com/api/payments/create-checkout-session', {
                 method: 'POST',
@@ -226,7 +208,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             window.location.href = checkout_url;
 
         } catch (error) {
-            console.error('Subscription failed:', error);
             alert('Failed to start checkout. Please try again.');
         }
     };
