@@ -1,10 +1,10 @@
-// src/components/DirectoryAnalyzer.jsx
+// src/components/DirectoryAnalyzer.jsx - Updated with better premium checking
 import React, { useState } from 'react';
 import { buildApiUrl, API_ENDPOINTS } from '../config/api';
 import PremiumPricingModal from './PremiumPricingModal';
 import styles from './DirectoryAnalyzer.module.css';
 
-function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
+function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumStatus }) {
     const [files, setFiles] = useState([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analysisResults, setAnalysisResults] = useState(null);
@@ -14,7 +14,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
     const handleDirectorySelect = (event) => {
         const fileList = Array.from(event.target.files);
         setFiles(fileList);
-        // Initially select all files
         setSelectedFiles(new Set(fileList.map((_, index) => index)));
     };
 
@@ -36,16 +35,35 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
         }
     };
 
+    const checkPremiumStatus = () => {
+        // Multiple ways to check premium status for compatibility
+        return user?.hasPremiumSubscription ||
+            user?.has_premium ||
+            (user?.subscription_status === 'active');
+    };
+
     const analyzeDirectory = async () => {
         if (selectedFiles.size === 0) {
             alert('Please select at least one file to analyze');
             return;
         }
 
-        // Check user subscription status first (frontend check for UX)
-        if (!user?.hasPremiumSubscription) {
-            setShowPricingModal(true);
-            return;
+        // First check premium status from user object
+        if (!checkPremiumStatus()) {
+            console.log('Premium check failed, checking with server...');
+
+            // Try to refresh premium status first
+            if (refreshPremiumStatus) {
+                const hasPremium = await refreshPremiumStatus();
+                if (!hasPremium) {
+                    setShowPricingModal(true);
+                    return;
+                }
+                // If premium status was refreshed successfully, continue with analysis
+            } else {
+                setShowPricingModal(true);
+                return;
+            }
         }
 
         setIsAnalyzing(true);
@@ -55,18 +73,15 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
             const formData = new FormData();
             const selectedFileArray = Array.from(selectedFiles).map(index => files[index]);
 
-            // Add all selected files to form data
             selectedFileArray.forEach((file, index) => {
                 formData.append('files', file);
             });
 
-            // Add directory name
             const directoryName = files[0]?.webkitRelativePath?.split('/')[0] || 'uploaded-folder';
             formData.append('directory_name', directoryName);
 
             console.log('Uploading files for directory:', directoryName);
 
-            // Upload files to server
             const uploadResponse = await fetch(buildApiUrl(API_ENDPOINTS.DIRECTORIES.UPLOAD), {
                 method: 'POST',
                 headers: {
@@ -75,32 +90,30 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
                 body: formData
             });
 
-            // Handle authentication and premium subscription errors
+            // Handle authentication errors
             if (uploadResponse.status === 401) {
                 alert('Please log in to continue');
                 return;
             }
 
-            if (uploadResponse.status === 402) {
-                const errorData = await uploadResponse.json();
-                if (errorData.detail?.error === 'premium_subscription_required') {
-                    setShowPricingModal(true);
-                    return;
-                }
-            }
+            // Handle premium subscription errors from backend
+            if (uploadResponse.status === 402 || uploadResponse.status === 403) {
+                const errorData = await uploadResponse.json().catch(() => ({}));
+                console.log('Backend premium check failed:', errorData);
 
-            if (uploadResponse.status === 403) {
-                const errorData = await uploadResponse.json();
-                console.log('403 Error details:', errorData);
-                // This might be a premium check that's returning 403 instead of 402
-                if (errorData.message?.includes('premium') || errorData.message?.includes('subscription')) {
-                    setShowPricingModal(true);
-                    return;
-                } else {
-                    // This is likely the premium check - show modal
-                    setShowPricingModal(true);
-                    return;
+                // Try refreshing premium status one more time
+                if (refreshPremiumStatus) {
+                    const hasPremium = await refreshPremiumStatus();
+                    if (hasPremium) {
+                        // Retry the request with refreshed status
+                        console.log('Premium status refreshed, retrying upload...');
+                        setIsAnalyzing(false);
+                        return analyzeDirectory(); // Recursive call with fresh status
+                    }
                 }
+
+                setShowPricingModal(true);
+                return;
             }
 
             if (!uploadResponse.ok) {
@@ -111,7 +124,7 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
             const uploadResult = await uploadResponse.json();
             console.log('Upload result:', uploadResult);
 
-            // Step 2: Now analyze using the uploaded directory path
+            // Step 2: Analyze using the uploaded directory path
             const serverDirectoryPath = uploadResult.directory_path || directoryName;
 
             const analyzeResponse = await fetch(buildApiUrl(API_ENDPOINTS.DIRECTORIES.ANALYZE), {
@@ -125,19 +138,10 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
                 })
             });
 
-            // Handle premium subscription errors from backend
-            if (analyzeResponse.status === 402) {
-                const errorData = await analyzeResponse.json();
-                if (errorData.detail?.error === 'premium_subscription_required') {
-                    setShowPricingModal(true);
-                    return;
-                }
-            }
-
-            if (analyzeResponse.status === 403) {
-                const errorData = await analyzeResponse.json();
-                console.log('Analyze 403 Error details:', errorData);
-                // Show premium modal for 403 errors too (until backend is fixed)
+            // Handle premium subscription errors from analysis endpoint
+            if (analyzeResponse.status === 402 || analyzeResponse.status === 403) {
+                const errorData = await analyzeResponse.json().catch(() => ({}));
+                console.log('Analysis premium check failed:', errorData);
                 setShowPricingModal(true);
                 return;
             }
@@ -192,15 +196,31 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
     };
 
     const handleSubscribe = async () => {
-        // This would integrate with your payment processor
-        console.log('Starting subscription process for user:', user.id);
-        // For now, just close the modal - you'll implement Stripe/payment integration
-        setShowPricingModal(false);
-        alert('Payment integration coming soon! For now, continuing with analysis...');
+        try {
+            console.log('Starting subscription process for user:', user.id);
 
-        // Temporarily set premium status for demo
-        user.hasPremiumSubscription = true;
-        analyzeDirectory();
+            // Create checkout session
+            const response = await fetch('https://pdfcontractanalyzer.com/api/payments/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create checkout session');
+            }
+
+            const { checkout_url } = await response.json();
+
+            // Redirect to Stripe checkout
+            window.location.href = checkout_url;
+
+        } catch (error) {
+            console.error('Subscription failed:', error);
+            alert('Failed to start checkout. Please try again.');
+        }
     };
 
     return (
@@ -299,6 +319,11 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
                                 <div className={styles.actions}>
                                     <div className={styles.selectionInfo}>
                                         {selectedFiles.size} of {files.length} files selected
+                                        {checkPremiumStatus() && (
+                                            <div style={{ fontSize: '12px', color: '#10a37f', marginTop: '4px' }}>
+                                                ✓ Premium subscription active
+                                            </div>
+                                        )}
                                     </div>
                                     <button
                                         onClick={analyzeDirectory}
@@ -317,9 +342,11 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user }) {
                 <PremiumPricingModal
                     onClose={() => setShowPricingModal(false)}
                     onSubscribe={handleSubscribe}
+                    user={user}
                 />
             )}
         </>
     );
 }
+
 export default DirectoryAnalyzer;

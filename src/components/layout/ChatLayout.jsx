@@ -1,10 +1,10 @@
-// src/components/layout/ChatLayout.jsx
+// src/components/layout/ChatLayout.jsx - Updated to pass refresh function
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import ChatArea from './ChatArea';
 import styles from './ChatLayout.module.css';
 
-function ChatLayout({ user, onLogout }) {
+function ChatLayout({ user, onLogout, refreshPremiumStatus }) {
     const [selectedContract, setSelectedContract] = useState(null);
     const [contracts, setContracts] = useState([
         // Sample contracts - you'll replace this with real data
@@ -32,6 +32,7 @@ function ChatLayout({ user, onLogout }) {
                 contracts={contracts}
                 selectedContract={selectedContract}
                 onSelectContract={setSelectedContract}
+                refreshPremiumStatus={refreshPremiumStatus}
             />
             <ChatArea
                 selectedContract={selectedContract}
