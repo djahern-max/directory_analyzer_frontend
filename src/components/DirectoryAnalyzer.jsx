@@ -36,10 +36,18 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
     };
 
     const checkPremiumStatus = () => {
+        console.log('Checking premium status for user:', user);
+        console.log('has_premium:', user?.has_premium);
+        console.log('hasPremiumSubscription:', user?.hasPremiumSubscription);
+        console.log('subscription_status:', user?.subscription_status);
+
         // Multiple ways to check premium status for compatibility
-        return user?.hasPremiumSubscription ||
+        const hasPremium = user?.hasPremiumSubscription ||
             user?.has_premium ||
             (user?.subscription_status === 'active');
+
+        console.log('Final premium check result:', hasPremium);
+        return hasPremium;
     };
 
     const analyzeDirectory = async () => {
