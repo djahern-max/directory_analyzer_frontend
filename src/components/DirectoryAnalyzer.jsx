@@ -1,4 +1,4 @@
-// src/components/DirectoryAnalyzer.jsx - SIMPLE PREMIUM CHECK
+// src/components/DirectoryAnalyzer.jsx - Clean Production Version
 import React, { useState } from 'react';
 import { buildApiUrl, API_ENDPOINTS } from '../config/api';
 import PremiumPricingModal from './PremiumPricingModal';
@@ -11,18 +11,8 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
     const [selectedFiles, setSelectedFiles] = useState(new Set());
     const [showPricingModal, setShowPricingModal] = useState(false);
 
-    // SIMPLE PREMIUM CHECK - EXACTLY MATCHES YOUR DATABASE MODEL
     const hasValidPremium = () => {
-        console.log('=== PREMIUM CHECK ===');
-        console.log('user object:', user);
-        console.log('user.has_premium:', user?.has_premium);
-        console.log('user.subscription_status:', user?.subscription_status);
-
-        // EXACT match to your database model
-        const isValid = user?.has_premium === true && user?.subscription_status === 'active';
-
-        console.log('Premium valid:', isValid);
-        return isValid;
+        return user?.has_premium === true && user?.subscription_status === 'active';
     };
 
     const handleDirectorySelect = (event) => {
@@ -55,14 +45,11 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             return;
         }
 
-        // SIMPLE CHECK: If not premium, show modal and STOP
         if (!hasValidPremium()) {
-            console.log('❌ No valid premium subscription - showing modal');
             setShowPricingModal(true);
             return;
         }
 
-        console.log('✅ Premium subscription confirmed - proceeding');
         setIsAnalyzing(true);
 
         try {
@@ -91,7 +78,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             }
 
             if (uploadResponse.status === 402 || uploadResponse.status === 403) {
-                console.log('❌ Server says no premium - showing modal');
                 setShowPricingModal(true);
                 return;
             }
@@ -118,7 +104,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             });
 
             if (analyzeResponse.status === 402 || analyzeResponse.status === 403) {
-                console.log('❌ Analysis endpoint says no premium - showing modal');
                 setShowPricingModal(true);
                 return;
             }
@@ -288,19 +273,12 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
                                 <div className={styles.actions}>
                                     <div className={styles.selectionInfo}>
                                         {selectedFiles.size} of {files.length} files selected
-
-                                        {/* SIMPLE STATUS DISPLAY */}
                                         <div style={{ fontSize: '12px', marginTop: '4px' }}>
                                             {hasValidPremium() ? (
                                                 <span style={{ color: '#10a37f' }}>✓ Premium subscription active</span>
                                             ) : (
                                                 <span style={{ color: '#ef4444' }}>⚠ Premium subscription required</span>
                                             )}
-                                        </div>
-
-                                        {/* DEBUG INFO - REMOVE THIS IN PRODUCTION */}
-                                        <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>
-                                            Debug: has_premium={String(user?.has_premium)}, status={user?.subscription_status}
                                         </div>
                                     </div>
                                     <button
