@@ -1,6 +1,7 @@
-// src/components/layout/Sidebar.jsx - Auto-restore DirectoryAnalyzer after checkout
+// src/components/layout/Sidebar.jsx - FIXED: Pass user prop to DirectoryAnalyzer
 import React, { useState, useEffect } from 'react';
 import DirectoryAnalyzer from '../DirectoryAnalyzer';
+
 import styles from './Sidebar.module.css';
 
 function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract, refreshPremiumStatus }) {
@@ -12,7 +13,7 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
         const checkScreenSize = () => {
             setIsMobile(window.innerWidth < 768);
             if (window.innerWidth >= 768) {
-                setIsOpen(false);
+                setIsOpen(false); // Close mobile menu when switching to desktop
             }
         };
 
@@ -20,32 +21,6 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
         window.addEventListener('resize', checkScreenSize);
         return () => window.removeEventListener('resize', checkScreenSize);
     }, []);
-
-    // Check if we should auto-restore DirectoryAnalyzer after successful checkout
-    useEffect(() => {
-        const checkForDirectoryAnalyzerRestore = () => {
-            // Check if there's saved DirectoryAnalyzer state
-            const savedState = localStorage.getItem('directoryAnalyzer_savedState');
-
-            // Check URL params for successful payment
-            const urlParams = new URLSearchParams(window.location.search);
-            const paymentStatus = urlParams.get('payment');
-
-            if (savedState && paymentStatus === 'success') {
-                // User returned from successful checkout and has saved state
-                // Wait a moment for the user object to be updated with premium status
-                setTimeout(() => {
-                    setShowDirectoryAnalyzer(true);
-                    console.log('Auto-opening DirectoryAnalyzer after successful checkout');
-                }, 1000);
-            }
-        };
-
-        // Only check for restore if user has premium (means checkout was successful)
-        if (user?.has_premium && user?.subscription_status === 'active') {
-            checkForDirectoryAnalyzerRestore();
-        }
-    }, [user]);
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
@@ -66,14 +41,6 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
         console.log('Directory analysis results:', results);
         // Here you would typically save the results and create new contract entries
         // For now, we'll just log them
-    };
-
-    const handleOpenDirectoryAnalyzer = () => {
-        setShowDirectoryAnalyzer(true);
-    };
-
-    const handleCloseDirectoryAnalyzer = () => {
-        setShowDirectoryAnalyzer(false);
     };
 
     return (
@@ -121,7 +88,7 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                     </button>
                     <button
                         className={styles.newButton}
-                        onClick={handleOpenDirectoryAnalyzer}
+                        onClick={() => setShowDirectoryAnalyzer(true)}
                     >
                         📁 Analyze Directory
                     </button>
@@ -136,7 +103,8 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                             <div
                                 key={contract.id}
                                 onClick={() => handleContractSelect(contract)}
-                                className={`${styles.contractItem} ${selectedContract?.id === contract.id ? styles.selected : ''}`}
+                                className={`${styles.contractItem} ${selectedContract?.id === contract.id ? styles.selected : ''
+                                    }`}
                             >
                                 <div className={styles.contractName}>{contract.name}</div>
                                 <div className={styles.contractMeta}>
@@ -162,10 +130,10 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                 </div>
             </div>
 
-            {/* Directory Analyzer Modal */}
+            {/* Directory Analyzer Modal - FIXED: Added user and refreshPremiumStatus props */}
             {showDirectoryAnalyzer && (
                 <DirectoryAnalyzer
-                    onClose={handleCloseDirectoryAnalyzer}
+                    onClose={() => setShowDirectoryAnalyzer(false)}
                     onAnalysisComplete={handleAnalysisComplete}
                     user={user}
                     refreshPremiumStatus={refreshPremiumStatus}

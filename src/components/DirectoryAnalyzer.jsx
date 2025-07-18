@@ -1,5 +1,5 @@
-// src/components/DirectoryAnalyzer.jsx - With State Persistence
-import React, { useState, useEffect } from 'react';
+// src/components/DirectoryAnalyzer.jsx - Clean Production Version
+import React, { useState } from 'react';
 import { buildApiUrl, API_ENDPOINTS } from '../config/api';
 import PremiumPricingModal from './PremiumPricingModal';
 import styles from './DirectoryAnalyzer.module.css';
@@ -11,81 +11,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
     const [selectedFiles, setSelectedFiles] = useState(new Set());
     const [showPricingModal, setShowPricingModal] = useState(false);
 
-    // State persistence key
-    const STORAGE_KEY = 'directoryAnalyzer_savedState';
-
-    // Load saved state on component mount
-    useEffect(() => {
-        loadSavedState();
-    }, []);
-
-    // Save state to localStorage
-    const saveState = () => {
-        if (files.length > 0) {
-            const stateToSave = {
-                files: files.map(file => ({
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                    webkitRelativePath: file.webkitRelativePath,
-                    lastModified: file.lastModified
-                })),
-                selectedFiles: Array.from(selectedFiles),
-                timestamp: Date.now()
-            };
-
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-            console.log('Saved directory analyzer state before checkout');
-        }
-    };
-
-    // Load saved state from localStorage
-    const loadSavedState = () => {
-        try {
-            const savedState = localStorage.getItem(STORAGE_KEY);
-            if (savedState) {
-                const state = JSON.parse(savedState);
-
-                // Only restore if the state is recent (within last 30 minutes)
-                const thirtyMinutes = 30 * 60 * 1000;
-                if (Date.now() - state.timestamp < thirtyMinutes) {
-                    console.log('Restoring saved directory analyzer state');
-
-                    // Create File objects from saved data (note: these won't be perfect File objects)
-                    const restoredFiles = state.files.map(fileData => {
-                        // Create a mock file object with the essential properties
-                        return {
-                            name: fileData.name,
-                            size: fileData.size,
-                            type: fileData.type,
-                            webkitRelativePath: fileData.webkitRelativePath,
-                            lastModified: fileData.lastModified
-                        };
-                    });
-
-                    setFiles(restoredFiles);
-                    setSelectedFiles(new Set(state.selectedFiles));
-
-                    // Clear the saved state since we've restored it
-                    localStorage.removeItem(STORAGE_KEY);
-
-                    // Show a notification that state was restored
-                    setTimeout(() => {
-                        alert('Welcome back! Your previous file selection has been restored.');
-                    }, 100);
-                }
-            }
-        } catch (error) {
-            console.error('Failed to load saved state:', error);
-            localStorage.removeItem(STORAGE_KEY);
-        }
-    };
-
-    // Clear saved state
-    const clearSavedState = () => {
-        localStorage.removeItem(STORAGE_KEY);
-    };
-
     const hasValidPremium = () => {
         return user?.has_premium === true && user?.subscription_status === 'active';
     };
@@ -94,8 +19,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
         const fileList = Array.from(event.target.files);
         setFiles(fileList);
         setSelectedFiles(new Set(fileList.map((_, index) => index)));
-        // Clear any previously saved state when user selects new files
-        clearSavedState();
     };
 
     const handleFileToggle = (index) => {
@@ -123,28 +46,14 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
         }
 
         if (!hasValidPremium()) {
-            // Save state before showing pricing modal
-            saveState();
             setShowPricingModal(true);
             return;
         }
 
-        // Clear saved state since we're proceeding with analysis
-        clearSavedState();
         setIsAnalyzing(true);
 
         try {
-            // For restored files that aren't real File objects, we need to handle them differently
-            const hasRealFiles = files.length > 0 && files[0] instanceof File;
-
-            if (!hasRealFiles) {
-                alert('Please reselect your files to proceed with analysis. Your selection has been restored but the files need to be reloaded.');
-                setFiles([]);
-                setSelectedFiles(new Set());
-                return;
-            }
-
-            // Upload files (existing code)
+            // Upload files
             const formData = new FormData();
             const selectedFileArray = Array.from(selectedFiles).map(index => files[index]);
 
@@ -169,8 +78,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             }
 
             if (uploadResponse.status === 402 || uploadResponse.status === 403) {
-                // Save state before showing pricing modal
-                saveState();
                 setShowPricingModal(true);
                 return;
             }
@@ -197,8 +104,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             });
 
             if (analyzeResponse.status === 402 || analyzeResponse.status === 403) {
-                // Save state before showing pricing modal
-                saveState();
                 setShowPricingModal(true);
                 return;
             }
@@ -219,17 +124,9 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
     };
 
     const handleUseResults = () => {
-        // Clear saved state when successfully completing
-        clearSavedState();
         if (analysisResults && onAnalysisComplete) {
             onAnalysisComplete(analysisResults);
         }
-        onClose();
-    };
-
-    const handleClose = () => {
-        // Clear saved state when manually closing
-        clearSavedState();
         onClose();
     };
 
@@ -260,9 +157,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
 
     const handleSubscribe = async () => {
         try {
-            // Save state before redirecting to checkout
-            saveState();
-
             const response = await fetch('https://pdfcontractanalyzer.com/api/payments/create-checkout-session', {
                 method: 'POST',
                 headers: {
@@ -276,9 +170,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             }
 
             const { checkout_url } = await response.json();
-
-            // The user will be redirected to Stripe checkout
-            // When they return, the saved state will be restored
             window.location.href = checkout_url;
 
         } catch (error) {
@@ -286,21 +177,13 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
         }
     };
 
-    const handlePricingModalClose = () => {
-        setShowPricingModal(false);
-        // Don't clear saved state here - they might open it again
-    };
-
-    // Check if files are restored (not real File objects)
-    const areFilesRestored = files.length > 0 && !(files[0] instanceof File);
-
     return (
         <>
             <div className={styles.overlay}>
                 <div className={styles.modal}>
                     <div className={styles.header}>
                         <h2>Analyze Directory</h2>
-                        <button onClick={handleClose} className={styles.closeButton}>✕</button>
+                        <button onClick={onClose} className={styles.closeButton}>✕</button>
                     </div>
 
                     <div className={styles.content}>
@@ -344,21 +227,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
                             </div>
                         ) : (
                             <div className={styles.fileListSection}>
-                                {/* Show restoration notice */}
-                                {areFilesRestored && (
-                                    <div style={{
-                                        background: '#fff3cd',
-                                        border: '1px solid #ffeaa7',
-                                        borderRadius: '4px',
-                                        padding: '12px',
-                                        marginBottom: '16px',
-                                        fontSize: '14px',
-                                        color: '#856404'
-                                    }}>
-                                        📁 Your file selection has been restored! To proceed with analysis, please reselect your folder.
-                                    </div>
-                                )}
-
                                 <div className={styles.fileListHeader}>
                                     <h3>Found {files.length} files</h3>
                                     <div className={styles.fileActions}>
@@ -428,7 +296,7 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             </div>
             {showPricingModal && (
                 <PremiumPricingModal
-                    onClose={handlePricingModalClose}
+                    onClose={() => setShowPricingModal(false)}
                     onSubscribe={handleSubscribe}
                     user={user}
                 />
