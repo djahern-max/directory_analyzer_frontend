@@ -1,7 +1,7 @@
 // src/components/layout/Sidebar.jsx
 import React, { useState, useEffect } from 'react';
 import DirectoryAnalyzer from '../DirectoryAnalyzer';
-import TokenDebugger from '../TokenDebugger'; // Add this temporarily
+
 import styles from './Sidebar.module.css';
 
 function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract }) {
@@ -138,8 +138,7 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                 />
             )}
 
-            {/* Temporary Token Debugger - Remove this later */}
-            <TokenDebugger />
+
         </>
     );
 }
