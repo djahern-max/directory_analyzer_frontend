@@ -1,10 +1,10 @@
-// src/components/layout/Sidebar.jsx
+// src/components/layout/Sidebar.jsx - FIXED: Pass user prop to DirectoryAnalyzer
 import React, { useState, useEffect } from 'react';
 import DirectoryAnalyzer from '../DirectoryAnalyzer';
 
 import styles from './Sidebar.module.css';
 
-function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract }) {
+function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract, refreshPremiumStatus }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [showDirectoryAnalyzer, setShowDirectoryAnalyzer] = useState(false);
@@ -130,15 +130,15 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                 </div>
             </div>
 
-            {/* Directory Analyzer Modal */}
+            {/* Directory Analyzer Modal - FIXED: Added user and refreshPremiumStatus props */}
             {showDirectoryAnalyzer && (
                 <DirectoryAnalyzer
                     onClose={() => setShowDirectoryAnalyzer(false)}
                     onAnalysisComplete={handleAnalysisComplete}
+                    user={user}
+                    refreshPremiumStatus={refreshPremiumStatus}
                 />
             )}
-
-
         </>
     );
 }
