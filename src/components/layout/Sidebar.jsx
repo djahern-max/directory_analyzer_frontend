@@ -1,143 +1,187 @@
-// src/components/layout/Sidebar.jsx - FIXED: Pass user prop to DirectoryAnalyzer
-import React, { useState, useEffect } from 'react';
-import DirectoryAnalyzer from '../DirectoryAnalyzer';
-
+// src/components/layout/Sidebar.jsx - Updated to handle loading states
+import React from 'react';
 import styles from './Sidebar.module.css';
 
-function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract, refreshPremiumStatus }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-    const [showDirectoryAnalyzer, setShowDirectoryAnalyzer] = useState(false);
-
-    useEffect(() => {
-        const checkScreenSize = () => {
-            setIsMobile(window.innerWidth < 768);
-            if (window.innerWidth >= 768) {
-                setIsOpen(false); // Close mobile menu when switching to desktop
-            }
-        };
-
-        checkScreenSize();
-        window.addEventListener('resize', checkScreenSize);
-        return () => window.removeEventListener('resize', checkScreenSize);
-    }, []);
-
-    const toggleSidebar = () => {
-        setIsOpen(!isOpen);
-    };
-
-    const closeSidebar = () => {
-        setIsOpen(false);
-    };
-
-    const handleContractSelect = (contract) => {
-        onSelectContract(contract);
-        if (isMobile) {
-            closeSidebar();
+function Sidebar({
+    user,
+    onLogout,
+    contracts,
+    selectedContract,
+    onSelectContract,
+    refreshPremiumStatus,
+    loading,
+    error,
+    onRefresh
+}) {
+    const formatDate = (dateString) => {
+        try {
+            return new Date(dateString).toLocaleDateString();
+        } catch {
+            return 'Unknown date';
         }
     };
 
-    const handleAnalysisComplete = (results) => {
-        console.log('Directory analysis results:', results);
-        // Here you would typically save the results and create new contract entries
-        // For now, we'll just log them
+    const formatFileSize = (bytes) => {
+        if (!bytes) return '';
+        const mb = bytes / (1024 * 1024);
+        return `${mb.toFixed(1)} MB`;
+    };
+
+    const getStatusBadge = (status) => {
+        const statusMap = {
+            'uploaded': { text: 'Uploaded', class: styles.statusUploaded },
+            'analyzing': { text: 'Analyzing', class: styles.statusAnalyzing },
+            'analyzed': { text: 'Analyzed', class: styles.statusAnalyzed },
+            'error': { text: 'Error', class: styles.statusError }
+        };
+
+        const statusInfo = statusMap[status] || { text: status, class: styles.statusDefault };
+
+        return (
+            <span className={`${styles.statusBadge} ${statusInfo.class}`}>
+                {statusInfo.text}
+            </span>
+        );
     };
 
     return (
-        <>
-            {/* Mobile Hamburger Button */}
-            {isMobile && (
-                <button
-                    className={`${styles.hamburgerButton} ${isOpen ? styles.hidden : ''}`}
-                    onClick={toggleSidebar}
-                    aria-label="Open menu"
-                >
-                    <div className={styles.hamburgerLine}></div>
-                    <div className={styles.hamburgerLine}></div>
-                    <div className={styles.hamburgerLine}></div>
-                </button>
-            )}
-
-            {/* Mobile Overlay */}
-            {isMobile && isOpen && (
-                <div
-                    className={styles.overlay}
-                    onClick={closeSidebar}
-                />
-            )}
-
-            {/* Sidebar */}
-            <div className={`${styles.sidebar} ${isMobile ? styles.mobile : ''} ${isOpen ? styles.open : ''}`}>
-                {/* Mobile Header with Close Button */}
-                {isMobile && (
-                    <div className={styles.mobileHeader}>
-                        <button
-                            className={styles.closeButton}
-                            onClick={closeSidebar}
-                            aria-label="Close menu"
-                        >
-                            ✕
-                        </button>
+        <div className={styles.sidebar}>
+            {/* User Profile Section */}
+            <div className={styles.userSection}>
+                <div className={styles.userInfo}>
+                    {user.picture_url && (
+                        <img
+                            src={user.picture_url}
+                            alt={user.name}
+                            className={styles.userAvatar}
+                        />
+                    )}
+                    <div className={styles.userDetails}>
+                        <h3>{user.name}</h3>
+                        <p>{user.email}</p>
+                        {user.has_premium && (
+                            <span className={styles.premiumBadge}>Premium</span>
+                        )}
                     </div>
-                )}
-
-                {/* Header Actions */}
-                <div className={styles.header}>
-
+                </div>
+                <div className={styles.userActions}>
                     <button
-                        className={styles.newButton}
-                        onClick={() => setShowDirectoryAnalyzer(true)}
+                        onClick={refreshPremiumStatus}
+                        className={styles.refreshButton}
+                        title="Refresh Premium Status"
                     >
-                        📄 Upload Contract
+                        🔄
                     </button>
-                </div>
-
-                {/* Contracts List */}
-                <div className={styles.contractsSection}>
-                    <div className={styles.sectionLabel}>CONTRACTS</div>
-
-                    <div className={styles.contractsList}>
-                        {contracts.map(contract => (
-                            <div
-                                key={contract.id}
-                                onClick={() => handleContractSelect(contract)}
-                                className={`${styles.contractItem} ${selectedContract?.id === contract.id ? styles.selected : ''
-                                    }`}
-                            >
-                                <div className={styles.contractName}>{contract.name}</div>
-                                <div className={styles.contractMeta}>
-                                    <span>#{contract.jobNumber}</span>
-                                    <span className={`${styles.status} ${styles[contract.status]}`}>
-                                        {contract.status}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* User Info */}
-                <div className={styles.userSection}>
-                    <div className={styles.userName}>{user.name}</div>
-                    <div className={styles.userCredits}>
-                        Credits: ${user.credits_remaining?.toFixed(2) || '0.00'}
-                    </div>
-                    <button onClick={onLogout} className={styles.logoutButton}>
-                        Sign Out
+                    <button
+                        onClick={onLogout}
+                        className={styles.logoutButton}
+                    >
+                        Logout
                     </button>
                 </div>
             </div>
 
-            {/* Directory Analyzer Modal - FIXED: Added user and refreshPremiumStatus props */}
-            {showDirectoryAnalyzer && (
-                <DirectoryAnalyzer
-                    onClose={() => setShowDirectoryAnalyzer(false)}
-                    onAnalysisComplete={handleAnalysisComplete}
-                    user={user}
-                    refreshPremiumStatus={refreshPremiumStatus}
-                />
-            )}
-        </>
+            {/* Contracts Section */}
+            <div className={styles.contractsSection}>
+                <div className={styles.contractsHeader}>
+                    <h3>Your Contracts</h3>
+                    <button
+                        onClick={onRefresh}
+                        className={styles.refreshButton}
+                        disabled={loading}
+                        title="Refresh Contracts"
+                    >
+                        {loading ? '⏳' : '🔄'}
+                    </button>
+                </div>
+
+                {/* Loading State */}
+                {loading && (
+                    <div className={styles.loadingState}>
+                        <div className={styles.spinner}></div>
+                        <p>Loading contracts...</p>
+                    </div>
+                )}
+
+                {/* Error State */}
+                {error && !loading && (
+                    <div className={styles.errorState}>
+                        <p className={styles.errorMessage}>
+                            ⚠️ Error loading contracts: {error}
+                        </p>
+                        <button
+                            onClick={onRefresh}
+                            className={styles.retryButton}
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                )}
+
+                {/* Empty State */}
+                {!loading && !error && contracts.length === 0 && (
+                    <div className={styles.emptyState}>
+                        <p>No contracts found</p>
+                        <p className={styles.emptyStateSubtext}>
+                            Upload some contracts to get started
+                        </p>
+                    </div>
+                )}
+
+                {/* Contracts List */}
+                {!loading && !error && contracts.length > 0 && (
+                    <div className={styles.contractsList}>
+                        {contracts.map((contract) => (
+                            <div
+                                key={contract.id}
+                                className={`${styles.contractItem} ${selectedContract?.id === contract.id ? styles.selected : ''
+                                    }`}
+                                onClick={() => onSelectContract(contract)}
+                            >
+                                <div className={styles.contractHeader}>
+                                    <h4 className={styles.contractName}>
+                                        {contract.name}
+                                    </h4>
+                                    {contract.isMainContract && (
+                                        <span className={styles.mainContractBadge}>
+                                            Main
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className={styles.contractMeta}>
+                                    <p className={styles.jobInfo}>
+                                        Job: {contract.jobNumber}
+                                        {contract.jobName && contract.jobName !== `Job ${contract.jobNumber}` && (
+                                            <span className={styles.jobName}>
+                                                {' - ' + contract.jobName}
+                                            </span>
+                                        )}
+                                    </p>
+                                    <p className={styles.uploadDate}>
+                                        {formatDate(contract.uploadDate)}
+                                    </p>
+                                    {contract.fileSize && (
+                                        <p className={styles.fileSize}>
+                                            {formatFileSize(contract.fileSize)}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className={styles.contractFooter}>
+                                    {getStatusBadge(contract.status)}
+                                    {contract.contractType && (
+                                        <span className={styles.contractType}>
+                                            {contract.contractType}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
     );
 }
 
