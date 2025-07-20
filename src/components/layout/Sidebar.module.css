@@ -1,307 +1,267 @@
-/* src/components/layout/Sidebar.module.css - Updated with loading states */
+/* src/components/layout/Sidebar.module.css */
 
 .sidebar {
-    width: 300px;
-    height: 100vh;
-    background: #f8f9fa;
-    border-right: 1px solid #e9ecef;
-    overflow-y: auto;
+    width: 280px;
+    min-width: 280px;
+    background-color: #f9f9f9;
+    color: #343541;
     display: flex;
     flex-direction: column;
+    border-right: 1px solid #e5e5e5;
+    height: 100vh;
+    overflow: hidden;
+    transition: transform 0.3s ease;
 }
 
-/* User Section */
-.userSection {
-    padding: 1rem;
-    border-bottom: 1px solid #e9ecef;
-    background: white;
-}
-
-.userInfo {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-}
-
-.userAvatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.userDetails h3 {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #333;
-}
-
-.userDetails p {
-    margin: 0;
-    font-size: 0.8rem;
-    color: #666;
-}
-
-.premiumBadge {
-    display: inline-block;
-    background: #4CAF50;
-    color: white;
-    padding: 0.2rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 500;
-    margin-top: 0.25rem;
-}
-
-.userActions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.refreshButton {
-    background: none;
-    border: 1px solid #ddd;
-    padding: 0.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-}
-
-.refreshButton:hover {
-    background: #f0f0f0;
-}
-
-.refreshButton:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.logoutButton {
-    background: #dc3545;
-    color: white;
+/* Mobile hamburger button */
+.hamburgerButton {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1001;
+    background: transparent;
     border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: 8px;
     cursor: pointer;
-    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.2s ease;
+    border-radius: 4px;
+}
+
+.hamburgerButton:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Hide hamburger when sidebar is open on mobile */
+@media (max-width: 767px) {
+    .hamburgerButton.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+/* Hamburger lines - ChatGPT style */
+.hamburgerLine {
+    width: 16px;
+    height: 1.5px;
+    background-color: #343541;
+    transition: all 0.2s ease;
+    border-radius: 1px;
+}
+
+/* Mobile overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+/* Mobile styles */
+@media (max-width: 767px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        transform: translateX(-100%);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar.mobile.open {
+        transform: translateX(0);
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+    .hamburgerButton {
+        display: none;
+    }
+
+    .overlay {
+        display: none;
+    }
+
+    .sidebar.mobile {
+        position: static;
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+/* Mobile header with close button */
+.mobileHeader {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.closeButton {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.closeButton:hover {
+    color: #343541;
+}
+
+/* Hide mobile header on desktop */
+@media (min-width: 768px) {
+    .mobileHeader {
+        display: none;
+    }
+}
+
+.header {
+    padding: 8px;
+    border-bottom: 1px solid #e5e5e5;
+    flex-shrink: 0;
+}
+
+.newButton {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: transparent;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    color: #343541;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 6px;
     transition: background-color 0.2s;
+    text-align: left;
 }
 
-.logoutButton:hover {
-    background: #c82333;
+.newButton:hover {
+    background-color: #f0f0f0;
 }
 
-/* Contracts Section */
+.newButton:last-child {
+    margin-bottom: 0;
+}
+
 .contractsSection {
     flex: 1;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
-.contractsHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid #e9ecef;
-    background: white;
+.sectionLabel {
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #8e8ea0;
+    border-bottom: 1px solid #e5e5e5;
+    flex-shrink: 0;
 }
 
-.contractsHeader h3 {
-    margin: 0;
-    font-size: 1rem;
-    color: #333;
-}
-
-/* Loading State */
-.loadingState {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    color: #666;
-}
-
-.spinner {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 0.5rem;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-/* Error State */
-.errorState {
-    padding: 1rem;
-    text-align: center;
-}
-
-.errorMessage {
-    color: #dc3545;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-}
-
-.retryButton {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.8rem;
-}
-
-.retryButton:hover {
-    background: #0056b3;
-}
-
-/* Empty State */
-.emptyState {
-    padding: 2rem;
-    text-align: center;
-    color: #666;
-}
-
-.emptyStateSubtext {
-    font-size: 0.8rem;
-    color: #999;
-    margin-top: 0.5rem;
-}
-
-/* Contracts List */
 .contractsList {
     flex: 1;
     overflow-y: auto;
+    padding: 4px 8px;
 }
 
 .contractItem {
-    padding: 1rem;
-    border-bottom: 1px solid #e9ecef;
+    padding: 10px 12px;
     cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 2px;
     transition: background-color 0.2s;
 }
 
 .contractItem:hover {
-    background: #f8f9fa;
+    background-color: #f0f0f0;
 }
 
 .contractItem.selected {
-    background: #e3f2fd;
-    border-left: 4px solid #007bff;
-}
-
-.contractHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.5rem;
+    background-color: #e8f4fd;
+    border: 1px solid #b8daff;
 }
 
 .contractName {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #333;
-    flex: 1;
-    line-height: 1.3;
-    word-break: break-word;
-}
-
-.mainContractBadge {
-    background: #ff9800;
-    color: white;
-    padding: 0.2rem 0.4rem;
-    border-radius: 8px;
-    font-size: 0.7rem;
     font-weight: 500;
-    margin-left: 0.5rem;
-    flex-shrink: 0;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    color: #343541;
 }
 
 .contractMeta {
-    margin-bottom: 0.5rem;
-}
-
-.jobInfo {
-    margin: 0 0 0.25rem 0;
-    font-size: 0.8rem;
-    color: #666;
-    font-weight: 500;
-}
-
-.jobName {
-    font-weight: normal;
-    color: #888;
-}
-
-.uploadDate,
-.fileSize {
-    margin: 0;
-    font-size: 0.7rem;
-    color: #888;
-}
-
-.contractFooter {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
+    font-size: 12px;
+    color: #8e8ea0;
 }
 
-/* Status Badges */
-.statusBadge {
-    padding: 0.2rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
+.status {
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 10px;
     font-weight: 500;
 }
 
-.statusUploaded {
-    background: #e3f2fd;
-    color: #1976d2;
+.status.analyzed {
+    background-color: #10a37f;
+    color: white;
 }
 
-.statusAnalyzing {
-    background: #fff3e0;
-    color: #f57c00;
+.status.analyzing {
+    background-color: #f59e0b;
+    color: white;
 }
 
-.statusAnalyzed {
-    background: #e8f5e8;
-    color: #4caf50;
+.userSection {
+    padding: 12px;
+    border-top: 1px solid #e5e5e5;
+    flex-shrink: 0;
+    background-color: #f9f9f9;
 }
 
-.statusError {
-    background: #ffebee;
-    color: #f44336;
+.userName {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #343541;
 }
 
-.statusDefault {
-    background: #f5f5f5;
-    color: #666;
+.userCredits {
+    font-size: 12px;
+    color: #8e8ea0;
+    margin-bottom: 8px;
 }
 
-.contractType {
-    font-size: 0.7rem;
-    color: #666;
-    padding: 0.2rem 0.4rem;
-    background: #f5f5f5;
-    border-radius: 8px;
+.logoutButton {
+    background: transparent;
+    border: 1px solid #e5e5e5;
+    color: #8e8ea0;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.logoutButton:hover {
+    background-color: #f0f0f0;
+    color: #343541;
 }
