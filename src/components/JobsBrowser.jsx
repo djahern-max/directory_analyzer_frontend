@@ -36,7 +36,9 @@ const JobsBrowser = ({ user }) => {
         setLoading(true);
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(buildApiUrl(`/directories/jobs/${jobNumber}/contracts`), {
+            // URL encode the job number since it contains spaces and special characters
+            const encodedJobNumber = encodeURIComponent(jobNumber);
+            const response = await fetch(buildApiUrl(`/directories/jobs/${encodedJobNumber}/contracts`), {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
