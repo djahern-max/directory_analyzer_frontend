@@ -83,14 +83,12 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
 
                 {/* Header Actions */}
                 <div className={styles.header}>
-                    <button className={styles.newButton}>
-                        📄 Upload Contract
-                    </button>
+
                     <button
                         className={styles.newButton}
                         onClick={() => setShowDirectoryAnalyzer(true)}
                     >
-                        📁 Analyze Directory
+                        📄 Upload Contract
                     </button>
                 </div>
 
