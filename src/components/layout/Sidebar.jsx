@@ -88,13 +88,13 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                         className={styles.newButton}
                         onClick={() => setShowDirectoryAnalyzer(true)}
                     >
-                        📄 Upload Contract
+                        📄 Upload Documents
                     </button>
                 </div>
 
                 {/* Contracts List */}
                 <div className={styles.contractsSection}>
-                    <div className={styles.sectionLabel}>CONTRACTS</div>
+                    <div className={styles.sectionLabel}>DOCUMENTS</div>
 
                     <div className={styles.contractsList}>
                         {contracts.map(contract => (
