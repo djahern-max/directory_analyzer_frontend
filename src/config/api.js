@@ -22,6 +22,7 @@ const API_CONFIG = {
 export const API_ENDPOINTS = {
     DIRECTORIES: {
         LIST: '/directories/list',
+        CONTRACTS: (jobNumber) => `/api/directories/jobs/${jobNumber}/contracts`,
         ANALYZE: '/directories/analyze',
         UPLOAD: '/directories/upload',
         IDENTIFY_MAIN: '/directories/identify-main-contract',
