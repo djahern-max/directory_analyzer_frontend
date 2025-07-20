@@ -1,4 +1,4 @@
-// src/components/DirectoryAnalyzer.jsx - Clean Production Version
+// src/components/DirectoryAnalyzer.jsx - Enhanced version with better integration
 import React, { useState } from 'react';
 import { buildApiUrl, API_ENDPOINTS } from '../config/api';
 import PremiumPricingModal from './PremiumPricingModal';
@@ -6,7 +6,9 @@ import styles from './DirectoryAnalyzer.module.css';
 
 function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumStatus }) {
     const [files, setFiles] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [uploadResults, setUploadResults] = useState(null);
     const [analysisResults, setAnalysisResults] = useState(null);
     const [selectedFiles, setSelectedFiles] = useState(new Set());
     const [showPricingModal, setShowPricingModal] = useState(false);
@@ -19,6 +21,9 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
         const fileList = Array.from(event.target.files);
         setFiles(fileList);
         setSelectedFiles(new Set(fileList.map((_, index) => index)));
+        // Reset previous results when selecting new files
+        setUploadResults(null);
+        setAnalysisResults(null);
     };
 
     const handleFileToggle = (index) => {
@@ -39,9 +44,29 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
         }
     };
 
-    const analyzeDirectory = async () => {
+    const detectContractType = (filename) => {
+        const name = filename.toLowerCase();
+
+        if (name.includes('executed') || name.includes('signed') || name.includes('complete_with_docusign')) {
+            return { type: 'Main Contract', icon: '📋', color: '#10a37f' };
+        } else if (name.includes('bond')) {
+            return { type: 'Bond', icon: '🔒', color: '#f59e0b' };
+        } else if (name.includes('cert_') || name.includes('certificate')) {
+            return { type: 'Certificate', icon: '📜', color: '#3b82f6' };
+        } else if (name.includes('proposal')) {
+            return { type: 'Proposal', icon: '📊', color: '#8b5cf6' };
+        } else if (name.includes('exhibit')) {
+            return { type: 'Exhibit', icon: '📎', color: '#6b7280' };
+        } else if (name.includes('affidavit')) {
+            return { type: 'Affidavit', icon: '✍️', color: '#ef4444' };
+        } else {
+            return { type: 'General', icon: '📄', color: '#6b7280' };
+        }
+    };
+
+    const uploadFiles = async () => {
         if (selectedFiles.size === 0) {
-            alert('Please select at least one file to analyze');
+            alert('Please select at least one file to upload');
             return;
         }
 
@@ -50,14 +75,13 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             return;
         }
 
-        setIsAnalyzing(true);
+        setIsUploading(true);
 
         try {
-            // Upload files
             const formData = new FormData();
             const selectedFileArray = Array.from(selectedFiles).map(index => files[index]);
 
-            selectedFileArray.forEach((file, index) => {
+            selectedFileArray.forEach((file) => {
                 formData.append('files', file);
             });
 
@@ -88,10 +112,24 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             }
 
             const uploadResult = await uploadResponse.json();
+            setUploadResults(uploadResult);
 
-            // Analyze the uploaded files
-            const serverDirectoryPath = uploadResult.directory_path || directoryName;
+        } catch (error) {
+            alert(`Upload failed: ${error.message}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
+    const analyzeUploadedFiles = async () => {
+        if (!uploadResults) {
+            alert('Please upload files first');
+            return;
+        }
+
+        setIsAnalyzing(true);
+
+        try {
             const analyzeResponse = await fetch(buildApiUrl(API_ENDPOINTS.DIRECTORIES.ANALYZE), {
                 method: 'POST',
                 headers: {
@@ -99,7 +137,7 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
                     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                 },
                 body: JSON.stringify({
-                    directory_path: serverDirectoryPath
+                    directory_path: uploadResults.directory_path
                 })
             });
 
@@ -147,10 +185,6 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             case 'xls':
             case 'xlsx': return '📊';
             case 'txt': return '📋';
-            case 'jpg':
-            case 'jpeg':
-            case 'png':
-            case 'gif': return '🖼️';
             default: return '📁';
         }
     };
@@ -182,7 +216,7 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
             <div className={styles.overlay}>
                 <div className={styles.modal}>
                     <div className={styles.header}>
-                        <h2>Analyze Directory</h2>
+                        <h2>Upload & Analyze Directory</h2>
                         <button onClick={onClose} className={styles.closeButton}>✕</button>
                     </div>
 
@@ -191,7 +225,7 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
                             <div className={styles.uploadSection}>
                                 <div className={styles.uploadArea}>
                                     <div className={styles.uploadIcon}>📁</div>
-                                    <h3>Select a folder to analyze</h3>
+                                    <h3>Select a folder to upload & analyze</h3>
                                     <p>Choose a directory containing contracts and documents that need to be organized and analyzed.</p>
 
                                     <label className={styles.uploadButton}>
@@ -212,16 +246,80 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
                             </div>
                         ) : analysisResults ? (
                             <div className={styles.resultsSection}>
-                                <h3>Analysis Results</h3>
-                                <div className={styles.resultsContent}>
-                                    <pre>{JSON.stringify(analysisResults, null, 2)}</pre>
+                                <h3>Analysis Complete! 🎉</h3>
+                                <div className={styles.resultsSummary}>
+                                    <div className={styles.summaryCard}>
+                                        <h4>Main Contract Identified</h4>
+                                        <p>{analysisResults.main_contract?.filename || 'None found'}</p>
+                                    </div>
+                                    <div className={styles.summaryCard}>
+                                        <h4>Documents Processed</h4>
+                                        <p>{analysisResults.stats?.successful_scans || 0} successful</p>
+                                    </div>
                                 </div>
+
+                                <details style={{ marginTop: '20px' }}>
+                                    <summary style={{ cursor: 'pointer', fontWeight: 'bold' }}>
+                                        View Full Results (JSON)
+                                    </summary>
+                                    <div className={styles.resultsContent} style={{ marginTop: '10px' }}>
+                                        <pre>{JSON.stringify(analysisResults, null, 2)}</pre>
+                                    </div>
+                                </details>
+
                                 <div className={styles.actions}>
-                                    <button onClick={() => setFiles([])} className={styles.secondaryButton}>
+                                    <button onClick={() => { setFiles([]); setUploadResults(null); setAnalysisResults(null); }} className={styles.secondaryButton}>
                                         Start Over
                                     </button>
                                     <button onClick={handleUseResults} className={styles.primaryButton}>
                                         Use These Results
+                                    </button>
+                                </div>
+                            </div>
+                        ) : uploadResults ? (
+                            <div className={styles.uploadResultsSection}>
+                                <h3>Upload Complete! ✅</h3>
+                                <div className={styles.uploadSummary}>
+                                    <p><strong>Job:</strong> {uploadResults.directory_name}</p>
+                                    <p><strong>Files uploaded:</strong> {uploadResults.successful_uploads} of {uploadResults.total_files}</p>
+                                    {uploadResults.failed_uploads.length > 0 && (
+                                        <div style={{ color: '#ef4444', fontSize: '14px', marginTop: '8px' }}>
+                                            Failed uploads: {uploadResults.failed_uploads.join(', ')}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className={styles.uploadedFilesList}>
+                                    <h4>Uploaded Files by Type:</h4>
+                                    {uploadResults.uploaded_files.map((file, index) => {
+                                        const typeInfo = detectContractType(file.filename);
+                                        return (
+                                            <div key={index} className={styles.uploadedFileItem}>
+                                                <span className={styles.fileTypeIcon}>{typeInfo.icon}</span>
+                                                <div className={styles.fileInfo}>
+                                                    <div className={styles.fileName}>{file.filename}</div>
+                                                    <div className={styles.fileType} style={{ color: typeInfo.color }}>
+                                                        {typeInfo.type} {file.is_main_contract && '⭐ (Main Contract)'}
+                                                    </div>
+                                                </div>
+                                                <div className={styles.fileSize}>
+                                                    {formatFileSize(file.size)}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className={styles.actions}>
+                                    <button onClick={() => setFiles([])} className={styles.secondaryButton}>
+                                        Upload Different Files
+                                    </button>
+                                    <button
+                                        onClick={analyzeUploadedFiles}
+                                        disabled={isAnalyzing}
+                                        className={styles.primaryButton}
+                                    >
+                                        {isAnalyzing ? 'Analyzing...' : 'Analyze Files with AI'}
                                     </button>
                                 </div>
                             </div>
@@ -240,34 +338,40 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
                                 </div>
 
                                 <div className={styles.fileList}>
-                                    {files.map((file, index) => (
-                                        <div
-                                            key={index}
-                                            className={`${styles.fileItem} ${selectedFiles.has(index) ? styles.selected : ''}`}
-                                            onClick={() => handleFileToggle(index)}
-                                        >
-                                            <div className={styles.fileIcon}>
-                                                {getFileIcon(file.name)}
-                                            </div>
-                                            <div className={styles.fileInfo}>
-                                                <div className={styles.fileName}>{file.name}</div>
-                                                <div className={styles.filePath}>
-                                                    {file.webkitRelativePath || file.name}
+                                    {files.map((file, index) => {
+                                        const typeInfo = detectContractType(file.name);
+                                        return (
+                                            <div
+                                                key={index}
+                                                className={`${styles.fileItem} ${selectedFiles.has(index) ? styles.selected : ''}`}
+                                                onClick={() => handleFileToggle(index)}
+                                            >
+                                                <div className={styles.fileIcon}>
+                                                    {getFileIcon(file.name)}
                                                 </div>
-                                                <div className={styles.fileSize}>
-                                                    {formatFileSize(file.size)}
+                                                <div className={styles.fileInfo}>
+                                                    <div className={styles.fileName}>{file.name}</div>
+                                                    <div className={styles.filePath}>
+                                                        {file.webkitRelativePath || file.name}
+                                                    </div>
+                                                    <div className={styles.fileType} style={{ color: typeInfo.color }}>
+                                                        {typeInfo.icon} {typeInfo.type}
+                                                    </div>
+                                                    <div className={styles.fileSize}>
+                                                        {formatFileSize(file.size)}
+                                                    </div>
+                                                </div>
+                                                <div className={styles.checkbox}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedFiles.has(index)}
+                                                        onChange={() => handleFileToggle(index)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
                                                 </div>
                                             </div>
-                                            <div className={styles.checkbox}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedFiles.has(index)}
-                                                    onChange={() => handleFileToggle(index)}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
 
                                 <div className={styles.actions}>
@@ -282,11 +386,11 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
                                         </div>
                                     </div>
                                     <button
-                                        onClick={analyzeDirectory}
-                                        disabled={selectedFiles.size === 0 || isAnalyzing}
+                                        onClick={uploadFiles}
+                                        disabled={selectedFiles.size === 0 || isUploading}
                                         className={styles.primaryButton}
                                     >
-                                        {isAnalyzing ? 'Analyzing...' : `Analyze ${selectedFiles.size} Files`}
+                                        {isUploading ? 'Uploading...' : `Upload ${selectedFiles.size} Files`}
                                     </button>
                                 </div>
                             </div>
