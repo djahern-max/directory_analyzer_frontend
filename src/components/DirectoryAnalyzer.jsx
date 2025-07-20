@@ -278,40 +278,101 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
                             </div>
                         ) : uploadResults ? (
                             <div className={styles.uploadResultsSection}>
-                                <h3>Upload Complete! ✅</h3>
-                                <div className={styles.uploadSummary}>
-                                    <p><strong>Job:</strong> {uploadResults.directory_name}</p>
-                                    <p><strong>Files uploaded:</strong> {uploadResults.successful_uploads} of {uploadResults.total_files}</p>
-                                    {uploadResults.failed_uploads.length > 0 && (
-                                        <div style={{ color: '#ef4444', fontSize: '14px', marginTop: '8px' }}>
-                                            Failed uploads: {uploadResults.failed_uploads.join(', ')}
-                                        </div>
-                                    )}
+                                {/* Success Header */}
+                                <div className={styles.successHeader}>
+                                    <div className={styles.successIcon}>✅</div>
+                                    <div>
+                                        <h3>Upload Complete!</h3>
+                                        <p className={styles.successSubtext}>
+                                            Files have been securely uploaded and organized by type
+                                        </p>
+                                    </div>
                                 </div>
 
-                                <div className={styles.uploadedFilesList}>
-                                    <h4>Uploaded Files by Type:</h4>
-                                    {uploadResults.uploaded_files.map((file, index) => {
-                                        const typeInfo = detectContractType(file.filename);
-                                        return (
-                                            <div key={index} className={styles.uploadedFileItem}>
-                                                <span className={styles.fileTypeIcon}>{typeInfo.icon}</span>
-                                                <div className={styles.fileInfo}>
-                                                    <div className={styles.fileName}>{file.filename}</div>
-                                                    <div className={styles.fileType} style={{ color: typeInfo.color }}>
-                                                        {typeInfo.type} {file.is_main_contract && '⭐ (Main Contract)'}
+                                {/* Job Summary Card */}
+                                <div className={styles.jobSummaryCard}>
+                                    <div className={styles.jobIcon}>📁</div>
+                                    <div className={styles.jobDetails}>
+                                        <div className={styles.jobName}>{uploadResults.directory_name}</div>
+                                        <div className={styles.jobMeta}>
+                                            Job #{uploadResults.job_number} • {uploadResults.successful_uploads} of {uploadResults.total_files} files uploaded
+                                        </div>
+                                    </div>
+                                    <div className={styles.uploadStats}>
+                                        <div className={styles.statItem}>
+                                            <span className={styles.statNumber}>{uploadResults.successful_uploads}</span>
+                                            <span className={styles.statLabel}>Uploaded</span>
+                                        </div>
+                                        {uploadResults.failed_count > 0 && (
+                                            <div className={styles.statItem}>
+                                                <span className={styles.statNumber} style={{ color: '#ef4444' }}>
+                                                    {uploadResults.failed_count}
+                                                </span>
+                                                <span className={styles.statLabel}>Failed</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Failed Uploads Alert (if any) */}
+                                {uploadResults.failed_uploads.length > 0 && (
+                                    <div className={styles.failedUploadsAlert}>
+                                        <div className={styles.alertIcon}>⚠️</div>
+                                        <div>
+                                            <div className={styles.alertTitle}>Some files couldn't be uploaded</div>
+                                            <div className={styles.alertMessage}>
+                                                {uploadResults.failed_uploads.join(', ')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Uploaded Files Grid */}
+                                <div className={styles.uploadedFilesGrid}>
+                                    <h4 className={styles.sectionTitle}>Uploaded Files by Type</h4>
+                                    <div className={styles.filesGrid}>
+                                        {uploadResults.uploaded_files.map((file, index) => {
+                                            const typeInfo = detectContractType(file.filename);
+                                            return (
+                                                <div key={index} className={styles.fileCard}>
+                                                    <div className={styles.fileCardHeader}>
+                                                        <div className={styles.fileTypeChip} style={{ backgroundColor: `${typeInfo.color}15`, color: typeInfo.color }}>
+                                                            <span className={styles.fileTypeIcon}>{typeInfo.icon}</span>
+                                                            <span className={styles.fileTypeName}>{typeInfo.type}</span>
+                                                        </div>
+                                                        {file.is_main_contract && (
+                                                            <div className={styles.mainContractBadge}>
+                                                                ⭐ Main Contract
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className={styles.fileCardBody}>
+                                                        <div className={styles.fileName} title={file.filename}>
+                                                            {file.filename}
+                                                        </div>
+                                                        <div className={styles.fileSize}>
+                                                            {formatFileSize(file.size)}
+                                                        </div>
+                                                    </div>
+                                                    <div className={styles.fileCardFooter}>
+                                                        <div className={styles.uploadStatus}>
+                                                            <div className={styles.statusDot}></div>
+                                                            <span>Uploaded successfully</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className={styles.fileSize}>
-                                                    {formatFileSize(file.size)}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
 
-                                <div className={styles.actions}>
-                                    <button onClick={() => setFiles([])} className={styles.secondaryButton}>
+                                {/* Action Buttons */}
+                                <div className={styles.actionButtons}>
+                                    <button
+                                        onClick={() => { setFiles([]); setUploadResults(null); }}
+                                        className={styles.secondaryButton}
+                                    >
+                                        <span className={styles.buttonIcon}>📁</span>
                                         Upload Different Files
                                     </button>
                                     <button
@@ -319,7 +380,15 @@ function DirectoryAnalyzer({ onClose, onAnalysisComplete, user, refreshPremiumSt
                                         disabled={isAnalyzing}
                                         className={styles.primaryButton}
                                     >
-                                        {isAnalyzing ? 'Analyzing...' : 'Analyze Files with AI'}
+                                        <span className={styles.buttonIcon}>🤖</span>
+                                        {isAnalyzing ? (
+                                            <>
+                                                <span className={styles.loadingSpinner}></span>
+                                                Analyzing...
+                                            </>
+                                        ) : (
+                                            'Analyze Files with AI'
+                                        )}
                                     </button>
                                 </div>
                             </div>
