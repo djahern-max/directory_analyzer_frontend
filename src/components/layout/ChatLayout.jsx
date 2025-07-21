@@ -101,10 +101,7 @@ function ChatLayout({ user, onLogout, refreshPremiumStatus }) {
 
                 setContracts(allContracts);
 
-                // Auto-select the first contract if none selected
-                if (allContracts.length > 0 && !selectedContract) {
-                    setSelectedContract(allContracts[0]);
-                }
+
 
             } catch (err) {
                 console.error('Error fetching jobs and contracts:', err);
