@@ -248,7 +248,10 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                         onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
                                                     >
                                                         <div style={{ fontWeight: '500', marginBottom: '2px' }}>
-                                                            {truncateFilename(extractFilename(doc))}
+                                                            {(() => {
+                                                                const filename = extractFilename(doc);
+                                                                return filename.length > 25 ? filename.substring(0, 22) + '...' : filename;
+                                                            })()}
                                                         </div>
                                                         {doc.is_main_contract && (
                                                             <div style={{ color: '#28a745', fontSize: '10px', fontWeight: 'bold' }}>
