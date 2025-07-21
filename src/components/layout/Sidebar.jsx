@@ -248,6 +248,7 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                         }}
                                                         onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
                                                         onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                                        title={extractFilename(doc)} // This shows the full name on hover
                                                     >
                                                         <div style={{ fontWeight: '500', marginBottom: '2px' }}>
                                                             {(() => {
