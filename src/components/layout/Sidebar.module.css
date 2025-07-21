@@ -265,3 +265,8 @@
     background-color: #f0f0f0;
     color: #343541;
 }
+
+.status.uploaded {
+    background-color: #6c757d;
+    color: white;
+}

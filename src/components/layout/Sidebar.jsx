@@ -1,6 +1,7 @@
-// src/components/layout/Sidebar.jsx - FIXED: Pass user prop to DirectoryAnalyzer
+// src/components/layout/Sidebar.jsx - Updated with Jobs List
 import React, { useState, useEffect } from 'react';
 import DirectoryAnalyzer from '../DirectoryAnalyzer';
+import { buildApiUrl } from '../../config/api';
 
 import styles from './Sidebar.module.css';
 
@@ -8,6 +9,39 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
     const [isOpen, setIsOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [showDirectoryAnalyzer, setShowDirectoryAnalyzer] = useState(false);
+
+    // Jobs state
+    const [jobs, setJobs] = useState([]);
+    const [loadingJobs, setLoadingJobs] = useState(false);
+
+    // Extract just the job number from job_number field
+    const extractJobNumber = (jobNumber) => {
+        const match = jobNumber.match(/^(\d+)/);
+        return match ? match[1] : jobNumber;
+    };
+
+    // Fetch jobs from API
+    const fetchJobs = async () => {
+        setLoadingJobs(true);
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch(buildApiUrl('/directories/jobs'), {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setJobs(data.jobs || []);
+            }
+        } catch (err) {
+            console.error('Error fetching jobs:', err);
+        } finally {
+            setLoadingJobs(false);
+        }
+    };
 
     useEffect(() => {
         const checkScreenSize = () => {
@@ -21,6 +55,13 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
         window.addEventListener('resize', checkScreenSize);
         return () => window.removeEventListener('resize', checkScreenSize);
     }, []);
+
+    // Fetch jobs when user is available
+    useEffect(() => {
+        if (user) {
+            fetchJobs();
+        }
+    }, [user]);
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);
@@ -39,8 +80,8 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
 
     const handleAnalysisComplete = (results) => {
         console.log('Directory analysis results:', results);
-        // Here you would typically save the results and create new contract entries
-        // For now, we'll just log them
+        // Refresh jobs after upload
+        fetchJobs();
     };
 
     return (
@@ -83,36 +124,45 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
 
                 {/* Header Actions */}
                 <div className={styles.header}>
-
                     <button
                         className={styles.newButton}
                         onClick={() => setShowDirectoryAnalyzer(true)}
                     >
-                        📄 Upload Contract
+                        📄 Upload Documents
                     </button>
                 </div>
 
-                {/* Contracts List */}
+                {/* Jobs List */}
                 <div className={styles.contractsSection}>
-                    <div className={styles.sectionLabel}>CONTRACTS</div>
+                    <div className={styles.sectionLabel}>JOBS</div>
 
                     <div className={styles.contractsList}>
-                        {contracts.map(contract => (
-                            <div
-                                key={contract.id}
-                                onClick={() => handleContractSelect(contract)}
-                                className={`${styles.contractItem} ${selectedContract?.id === contract.id ? styles.selected : ''
-                                    }`}
-                            >
-                                <div className={styles.contractName}>{contract.name}</div>
-                                <div className={styles.contractMeta}>
-                                    <span>#{contract.jobNumber}</span>
-                                    <span className={`${styles.status} ${styles[contract.status]}`}>
-                                        {contract.status}
-                                    </span>
-                                </div>
+                        {loadingJobs ? (
+                            <div style={{ padding: '12px', color: '#666', fontSize: '14px' }}>
+                                Loading jobs...
                             </div>
-                        ))}
+                        ) : jobs.length === 0 ? (
+                            <div style={{ padding: '12px', color: '#666', fontSize: '14px' }}>
+                                No jobs found.
+                            </div>
+                        ) : (
+                            jobs.map(job => (
+                                <div
+                                    key={job.id || job.job_number}
+                                    className={styles.contractItem}
+                                >
+                                    <div className={styles.contractName}>
+                                        {extractJobNumber(job.job_number)}
+                                    </div>
+                                    <div className={styles.contractMeta}>
+                                        <span>{job.total_contracts || 0} docs</span>
+                                        <span className={`${styles.status} ${styles.uploaded}`}>
+                                            uploaded
+                                        </span>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -128,7 +178,7 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                 </div>
             </div>
 
-            {/* Directory Analyzer Modal - FIXED: Added user and refreshPremiumStatus props */}
+            {/* Directory Analyzer Modal */}
             {showDirectoryAnalyzer && (
                 <DirectoryAnalyzer
                     onClose={() => setShowDirectoryAnalyzer(false)}
