@@ -23,8 +23,10 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
             // The id contains the full path, extract just the filename
             const parts = doc.id.split('/');
             const filename = parts[parts.length - 1]; // Get the last part
-            // Remove the timestamp prefix pattern: 20250720_181744_a639e7f8_
-            return filename.replace(/^\d{8}_\d{6}_[a-f0-9]{8}_/, '');
+            // Remove the timestamp prefix pattern: 20250720_232111_b9bf8df0_
+            const cleanName = filename.replace(/^\d{8}_\d{6}_[a-f0-9]{8}_/, '');
+            // Also remove any job number prefix like "2215 - "
+            return cleanName.replace(/^\d{4}\s*-\s*/, '');
         }
         return `Document ${Math.random()}`;
     };
@@ -250,9 +252,7 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                         <div style={{ fontWeight: '500', marginBottom: '2px' }}>
                                                             {(() => {
                                                                 const filename = extractFilename(doc);
-                                                                // Remove job number prefix if present (e.g., "2215 - " from "2215 - PNSY DD2 Cassio...")
-                                                                const cleanName = filename.replace(/^\d{4}\s*-\s*/, '');
-                                                                return cleanName.length > 25 ? cleanName.substring(0, 22) + '...' : cleanName;
+                                                                return filename.length > 25 ? filename.substring(0, 22) + '...' : filename;
                                                             })()}
                                                         </div>
                                                         {doc.is_main_contract && (
