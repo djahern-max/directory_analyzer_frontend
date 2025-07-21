@@ -54,6 +54,15 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                 const data = await response.json();
                 console.log('Documents API response:', data);
                 console.log('Contracts array:', data.contracts);
+                // Let's see what's in the first few documents
+                if (data.contracts && data.contracts.length > 0) {
+                    console.log('First document:', data.contracts[0]);
+                    console.log('First document ID:', data.contracts[0].id);
+                    if (data.contracts[1]) {
+                        console.log('Second document:', data.contracts[1]);
+                        console.log('Second document ID:', data.contracts[1].id);
+                    }
+                }
                 setJobDocuments(data.contracts || []);
             }
         } catch (err) {
