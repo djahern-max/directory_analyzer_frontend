@@ -19,7 +19,7 @@ function ChatLayout({ user, onLogout, refreshPremiumStatus }) {
                 setError(null);
 
                 // Get user's authentication token
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('auth_token');
                 if (!token) {
                     throw new Error('No authentication token found');
                 }
