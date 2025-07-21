@@ -19,18 +19,14 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
 
     // Extract filename from file path
     const extractFilename = (doc) => {
-        // Try multiple possible filename sources
-        if (doc.filename) return doc.filename;
-        if (doc.original_filename) return doc.original_filename;
         if (doc.id) {
-            // Extract filename from file path like "users/a5fab823-cfa3-4f4b-8892-a531e5e08d06/jobs/2215/contracts/unknown/20250720_181744_a639e7f8_filename.pdf"
+            // The id contains the full path, extract just the filename
             const parts = doc.id.split('/');
-            const lastPart = parts[parts.length - 1];
-            // Remove timestamp prefix if present (20250720_181744_a639e7f8_)
-            const cleanName = lastPart.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
-            return cleanName;
+            const filename = parts[parts.length - 1]; // Get the last part
+            // Remove the timestamp prefix pattern: 20250720_181744_a639e7f8_
+            return filename.replace(/^\d{8}_\d{6}_[a-f0-9]{8}_/, '');
         }
-        return 'Unknown Document';
+        return `Document ${Math.random()}`;
     };
 
     // Extract just the job number from job_number field
