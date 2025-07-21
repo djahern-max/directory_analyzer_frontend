@@ -15,7 +15,8 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
     const [loadingJobs, setLoadingJobs] = useState(false);
     const [selectedJob, setSelectedJob] = useState(null);
     const [jobDocuments, setJobDocuments] = useState([]);
-    const [loadingDocuments, setLoadingDocuments] = useState(false);
+    // State for expanded classifications
+    const [expandedClassifications, setExpandedClassifications] = useState({});
 
     // Extract filename from file path
     const extractFilename = (doc) => {
@@ -240,9 +241,9 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                         </div>
                                     </div>
 
-                                    {/* Documents List (show when job is selected) */}
+                                    {/* Documents List grouped by classification (show when job is selected) */}
                                     {selectedJob?.job_number === job.job_number && (
-                                        <div style={{ marginLeft: '20px', borderLeft: '2px solid #e5e5e5', paddingLeft: '10px' }}>
+                                        <div style={{ marginLeft: '10px', borderLeft: '2px solid #e5e5e5', paddingLeft: '10px' }}>
                                             {loadingDocuments ? (
                                                 <div style={{ padding: '8px', color: '#666', fontSize: '12px' }}>
                                                     Loading documents...
@@ -252,39 +253,68 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                     No documents found.
                                                 </div>
                                             ) : (
-                                                jobDocuments.map((doc, index) => (
-                                                    <div
-                                                        key={doc.id || index}
-                                                        style={{
-                                                            padding: '6px 8px',
-                                                            margin: '2px 0',
-                                                            backgroundColor: '#f8f9fa',
-                                                            borderRadius: '4px',
-                                                            fontSize: '12px',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                        onMouseEnter={(e) => {
-                                                            e.target.style.backgroundColor = '#e9ecef';
-                                                            // Force tooltip to show faster
-                                                            e.target.style.cssText += '; tooltip-delay: 0ms !important;';
-                                                        }}
-                                                        onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                                                        title={extractFilename(doc)} // This shows the full name on hover
-                                                        data-tooltip={extractFilename(doc)} // Alternative for faster tooltip
-                                                    >
-                                                        <div style={{ fontWeight: '500', marginBottom: '2px' }}>
-                                                            {(() => {
-                                                                const filename = extractFilename(doc);
-                                                                return filename.length > 25 ? filename.substring(0, 22) + '...' : filename;
-                                                            })()}
-                                                        </div>
-                                                        {doc.is_main_contract && (
-                                                            <div style={{ color: '#28a745', fontSize: '10px', fontWeight: 'bold' }}>
-                                                                Main Contract
+                                                (() => {
+                                                    const groupedDocs = groupDocumentsByClassification(jobDocuments);
+                                                    return Object.entries(groupedDocs).map(([classification, docs]) => (
+                                                        <div key={classification} style={{ marginBottom: '8px' }}>
+                                                            {/* Classification Header */}
+                                                            <div
+                                                                style={{
+                                                                    padding: '4px 8px',
+                                                                    backgroundColor: '#e9ecef',
+                                                                    borderRadius: '4px',
+                                                                    fontSize: '11px',
+                                                                    fontWeight: 'bold',
+                                                                    cursor: 'pointer',
+                                                                    textTransform: 'uppercase',
+                                                                    color: '#495057'
+                                                                }}
+                                                                onClick={() => handleClassificationToggle(job.job_number, classification)}
+                                                            >
+                                                                <span style={{ marginRight: '4px' }}>
+                                                                    {expandedClassifications[`${job.job_number}-${classification}`] ? '▼' : '▶'}
+                                                                </span>
+                                                                {classification.replace('_', ' ')} ({docs.length})
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                ))
+
+                                                            {/* Documents in this classification */}
+                                                            {expandedClassifications[`${job.job_number}-${classification}`] && (
+                                                                <div style={{ marginLeft: '15px', marginTop: '4px' }}>
+                                                                    {docs.map((doc, index) => (
+                                                                        <div
+                                                                            key={doc.id || index}
+                                                                            style={{
+                                                                                padding: '4px 6px',
+                                                                                margin: '2px 0',
+                                                                                backgroundColor: '#f8f9fa',
+                                                                                borderRadius: '3px',
+                                                                                fontSize: '11px',
+                                                                                cursor: 'pointer'
+                                                                            }}
+                                                                            onMouseEnter={(e) => {
+                                                                                e.target.style.backgroundColor = '#e9ecef';
+                                                                            }}
+                                                                            onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                                                            title={extractFilename(doc)}
+                                                                        >
+                                                                            <div style={{ fontWeight: '500', marginBottom: '1px' }}>
+                                                                                {(() => {
+                                                                                    const filename = extractFilename(doc);
+                                                                                    return filename.length > 20 ? filename.substring(0, 17) + '...' : filename;
+                                                                                })()}
+                                                                            </div>
+                                                                            {doc.is_main_contract && (
+                                                                                <div style={{ color: '#28a745', fontSize: '9px', fontWeight: 'bold' }}>
+                                                                                    Main Contract
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ));
+                                                })()
                                             )}
                                         </div>
                                     )}
