@@ -263,9 +263,14 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                             fontSize: '12px',
                                                             cursor: 'pointer'
                                                         }}
-                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
+                                                        onMouseEnter={(e) => {
+                                                            e.target.style.backgroundColor = '#e9ecef';
+                                                            // Force tooltip to show faster
+                                                            e.target.style.cssText += '; tooltip-delay: 0ms !important;';
+                                                        }}
                                                         onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
                                                         title={extractFilename(doc)} // This shows the full name on hover
+                                                        data-tooltip={extractFilename(doc)} // Alternative for faster tooltip
                                                     >
                                                         <div style={{ fontWeight: '500', marginBottom: '2px' }}>
                                                             {(() => {
