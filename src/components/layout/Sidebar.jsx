@@ -1,7 +1,6 @@
 // src/components/layout/Sidebar.jsx - FIXED: Pass user prop to DirectoryAnalyzer
 import React, { useState, useEffect } from 'react';
 import DirectoryAnalyzer from '../DirectoryAnalyzer';
-import JobsBrowser from '../JobsBrowser';
 
 import styles from './Sidebar.module.css';
 
@@ -89,14 +88,13 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                         className={styles.newButton}
                         onClick={() => setShowDirectoryAnalyzer(true)}
                     >
-                        📄 Upload Documents
+                        📄 Upload Contract
                     </button>
                 </div>
 
                 {/* Contracts List */}
                 <div className={styles.contractsSection}>
-                    <div className={styles.sectionLabel}>DOCUMENT LIST:</div>
-                    <JobsBrowser />
+                    <div className={styles.sectionLabel}>CONTRACTS</div>
 
                     <div className={styles.contractsList}>
                         {contracts.map(contract => (
