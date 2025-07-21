@@ -17,6 +17,22 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
     const [jobDocuments, setJobDocuments] = useState([]);
     const [loadingDocuments, setLoadingDocuments] = useState(false);
 
+    // Extract filename from file path
+    const extractFilename = (doc) => {
+        // Try multiple possible filename sources
+        if (doc.filename) return doc.filename;
+        if (doc.original_filename) return doc.original_filename;
+        if (doc.id) {
+            // Extract filename from file path like "users/a5fab823-cfa3-4f4b-8892-a531e5e08d06/jobs/2215/contracts/unknown/20250720_181744_a639e7f8_filename.pdf"
+            const parts = doc.id.split('/');
+            const lastPart = parts[parts.length - 1];
+            // Remove timestamp prefix if present (20250720_181744_a639e7f8_)
+            const cleanName = lastPart.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
+            return cleanName;
+        }
+        return 'Unknown Document';
+    };
+
     // Extract just the job number from job_number field
     const extractJobNumber = (jobNumber) => {
         const match = jobNumber.match(/^(\d+)/);
@@ -236,7 +252,7 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                         onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
                                                     >
                                                         <div style={{ fontWeight: '500', marginBottom: '2px' }}>
-                                                            {doc.filename || doc.original_filename || `Document ${index + 1}`}
+                                                            {truncateFilename(extractFilename(doc))}
                                                         </div>
                                                         {doc.is_main_contract && (
                                                             <div style={{ color: '#28a745', fontSize: '10px', fontWeight: 'bold' }}>
