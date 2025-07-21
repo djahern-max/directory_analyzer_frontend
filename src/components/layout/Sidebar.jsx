@@ -38,6 +38,8 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
 
             if (response.ok) {
                 const data = await response.json();
+                console.log('Documents API response:', data);
+                console.log('Contracts array:', data.contracts);
                 setJobDocuments(data.contracts || []);
             }
         } catch (err) {
@@ -234,7 +236,7 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                         onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
                                                     >
                                                         <div style={{ fontWeight: '500', marginBottom: '2px' }}>
-                                                            {doc.filename || `Document ${index + 1}`}
+                                                            {doc.filename || doc.original_filename || `Document ${index + 1}`}
                                                         </div>
                                                         {doc.is_main_contract && (
                                                             <div style={{ color: '#28a745', fontSize: '10px', fontWeight: 'bold' }}>
@@ -255,7 +257,9 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                 {/* User Info */}
                 <div className={styles.userSection}>
                     <div className={styles.userName}>{user.name}</div>
-
+                    <div className={styles.userCredits}>
+                        Credits: ${user.credits_remaining?.toFixed(2) || '0.00'}
+                    </div>
                     <button onClick={onLogout} className={styles.logoutButton}>
                         Sign Out
                     </button>
