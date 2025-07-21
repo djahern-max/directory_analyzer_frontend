@@ -250,7 +250,9 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                         <div style={{ fontWeight: '500', marginBottom: '2px' }}>
                                                             {(() => {
                                                                 const filename = extractFilename(doc);
-                                                                return filename.length > 25 ? filename.substring(0, 22) + '...' : filename;
+                                                                // Remove job number prefix if present (e.g., "2215 - " from "2215 - PNSY DD2 Cassio...")
+                                                                const cleanName = filename.replace(/^\d{4}\s*-\s*/, '');
+                                                                return cleanName.length > 25 ? cleanName.substring(0, 22) + '...' : cleanName;
                                                             })()}
                                                         </div>
                                                         {doc.is_main_contract && (
