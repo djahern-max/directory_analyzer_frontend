@@ -1,4 +1,4 @@
-// src/components/layout/Sidebar.jsx - Updated with Jobs List
+// src/components/layout/Sidebar.jsx - Updated with document click handlers
 import React, { useState, useEffect } from 'react';
 import DirectoryAnalyzer from '../DirectoryAnalyzer';
 import { buildApiUrl } from '../../config/api';
@@ -113,15 +113,6 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                 const data = await response.json();
                 console.log('Documents API response:', data);
                 console.log('Contracts array:', data.contracts);
-                // Let's see what's in the first few documents
-                if (data.contracts && data.contracts.length > 0) {
-                    console.log('First document:', data.contracts[0]);
-                    console.log('First document ID:', data.contracts[0].id);
-                    if (data.contracts[1]) {
-                        console.log('Second document:', data.contracts[1]);
-                        console.log('Second document ID:', data.contracts[1].id);
-                    }
-                }
                 setJobDocuments(data.contracts || []);
             }
         } catch (err) {
@@ -177,6 +168,22 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
             setSelectedJob(job);
             await fetchJobDocuments(job.job_number);
         }
+    };
+
+    // NEW: Handle document click
+    const handleDocumentClick = (doc) => {
+        // Create a contract object in the format expected by ChatArea
+        const contractData = {
+            id: doc.id,
+            name: extractFilename(doc),
+            job_number: selectedJob.job_number,
+            document_count: 1,
+            isMainContract: doc.is_main_contract,
+            fileKey: doc.file_key || doc.id,
+            // Add any other properties your ChatArea component expects
+        };
+        console.log('Document clicked:', contractData);
+        handleContractSelect(contractData);
     };
 
     const handleAnalysisComplete = (results) => {
@@ -306,19 +313,21 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                                 {classification.replace('_', ' ')} ({docs.length})
                                                             </div>
 
-                                                            {/* Documents in this classification */}
+                                                            {/* Documents in this classification - FIXED WITH CLICK HANDLERS */}
                                                             {expandedClassifications[`${job.job_number}-${classification}`] && (
                                                                 <div style={{ marginLeft: '15px', marginTop: '4px' }}>
                                                                     {docs.map((doc, index) => (
                                                                         <div
                                                                             key={doc.id || index}
+                                                                            onClick={() => handleDocumentClick(doc)}  // ← ADDED CLICK HANDLER
                                                                             style={{
                                                                                 padding: '4px 6px',
                                                                                 margin: '2px 0',
                                                                                 backgroundColor: '#f8f9fa',
                                                                                 borderRadius: '3px',
                                                                                 fontSize: '11px',
-                                                                                cursor: 'pointer'
+                                                                                cursor: 'pointer',
+                                                                                transition: 'background-color 0.2s'  // ← ADDED TRANSITION
                                                                             }}
                                                                             onMouseEnter={(e) => {
                                                                                 e.target.style.backgroundColor = '#e9ecef';
@@ -329,7 +338,8 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                                                             <div style={{ fontWeight: '500', marginBottom: '1px' }}>
                                                                                 {(() => {
                                                                                     const filename = extractFilename(doc);
-                                                                                    return filename.length > 20 ? filename.substring(0, 17) + '...' : filename;
+                                                                                    return filename.length > 20 ?
+                                                                                        filename.substring(0, 17) + '...' : filename;
                                                                                 })()}
                                                                             </div>
                                                                             {doc.is_main_contract && (
