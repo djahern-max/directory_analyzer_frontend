@@ -156,9 +156,6 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                                     </div>
                                     <div className={styles.contractMeta}>
                                         <span>{job.total_contracts || 0} docs</span>
-                                        <span className={`${styles.status} ${styles.uploaded}`}>
-                                            uploaded
-                                        </span>
                                     </div>
                                 </div>
                             ))
