@@ -13,6 +13,9 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
     // Jobs state
     const [jobs, setJobs] = useState([]);
     const [loadingJobs, setLoadingJobs] = useState(false);
+    const [selectedJob, setSelectedJob] = useState(null);
+    const [jobDocuments, setJobDocuments] = useState([]);
+    const [loadingDocuments, setLoadingDocuments] = useState(false);
 
     // Extract just the job number from job_number field
     const extractJobNumber = (jobNumber) => {
@@ -20,7 +23,42 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
         return match ? match[1] : jobNumber;
     };
 
-    // Fetch jobs from API
+    // Fetch documents for a specific job
+    const fetchJobDocuments = async (jobNumber) => {
+        setLoadingDocuments(true);
+        try {
+            const token = localStorage.getItem('auth_token');
+            const encodedJobNumber = encodeURIComponent(jobNumber);
+            const response = await fetch(buildApiUrl(`/directories/jobs/${encodedJobNumber}/contracts`), {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setJobDocuments(data.contracts || []);
+            }
+        } catch (err) {
+            console.error('Error fetching documents:', err);
+        } finally {
+            setLoadingDocuments(false);
+        }
+    };
+
+    // Handle job click
+    const handleJobClick = async (job) => {
+        if (selectedJob?.job_number === job.job_number) {
+            // If clicking the same job, collapse it
+            setSelectedJob(null);
+            setJobDocuments([]);
+        } else {
+            // Select new job and fetch its documents
+            setSelectedJob(job);
+            await fetchJobDocuments(job.job_number);
+        }
+    };
     const fetchJobs = async () => {
         setLoadingJobs(true);
         try {
@@ -147,16 +185,67 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                             </div>
                         ) : (
                             jobs.map(job => (
-                                <div
-                                    key={job.id || job.job_number}
-                                    className={styles.contractItem}
-                                >
-                                    <div className={styles.contractName}>
-                                        {extractJobNumber(job.job_number)}
+                                <div key={job.id || job.job_number}>
+                                    {/* Job Item */}
+                                    <div
+                                        className={`${styles.contractItem} ${selectedJob?.job_number === job.job_number ? styles.selected : ''}`}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            console.log('Clicked job:', job.job_number);
+                                            handleJobClick(job);
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <div className={styles.contractName}>
+                                            {extractJobNumber(job.job_number)}
+                                        </div>
+                                        <div className={styles.contractMeta}>
+                                            <span>{job.total_contracts || 0} docs</span>
+                                            <span style={{ fontSize: '12px' }}>
+                                                {selectedJob?.job_number === job.job_number ? '▼' : '▶'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div className={styles.contractMeta}>
-                                        <span>{job.total_contracts || 0} docs</span>
-                                    </div>
+
+                                    {/* Documents List (show when job is selected) */}
+                                    {selectedJob?.job_number === job.job_number && (
+                                        <div style={{ marginLeft: '20px', borderLeft: '2px solid #e5e5e5', paddingLeft: '10px' }}>
+                                            {loadingDocuments ? (
+                                                <div style={{ padding: '8px', color: '#666', fontSize: '12px' }}>
+                                                    Loading documents...
+                                                </div>
+                                            ) : jobDocuments.length === 0 ? (
+                                                <div style={{ padding: '8px', color: '#666', fontSize: '12px' }}>
+                                                    No documents found.
+                                                </div>
+                                            ) : (
+                                                jobDocuments.map((doc, index) => (
+                                                    <div
+                                                        key={doc.id || index}
+                                                        style={{
+                                                            padding: '6px 8px',
+                                                            margin: '2px 0',
+                                                            backgroundColor: '#f8f9fa',
+                                                            borderRadius: '4px',
+                                                            fontSize: '12px',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
+                                                        onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                                    >
+                                                        <div style={{ fontWeight: '500', marginBottom: '2px' }}>
+                                                            {doc.filename || `Document ${index + 1}`}
+                                                        </div>
+                                                        {doc.is_main_contract && (
+                                                            <div style={{ color: '#28a745', fontSize: '10px', fontWeight: 'bold' }}>
+                                                                Main Contract
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         )}
