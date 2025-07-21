@@ -15,8 +15,16 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
     const [loadingJobs, setLoadingJobs] = useState(false);
     const [selectedJob, setSelectedJob] = useState(null);
     const [jobDocuments, setJobDocuments] = useState([]);
+    const [loadingDocuments, setLoadingDocuments] = useState(false);
+
     // State for expanded classifications
     const [expandedClassifications, setExpandedClassifications] = useState({});
+
+    // Extract just the job number from job_number field
+    const extractJobNumber = (jobNumber) => {
+        const match = jobNumber.match(/^(\d+)/);
+        return match ? match[1] : jobNumber;
+    };
 
     // Extract filename from file path
     const extractFilename = (doc) => {
@@ -40,10 +48,52 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
         return `Document ${Math.random()}`;
     };
 
-    // Extract just the job number from job_number field
-    const extractJobNumber = (jobNumber) => {
-        const match = jobNumber.match(/^(\d+)/);
-        return match ? match[1] : jobNumber;
+    // Group documents by classification
+    const groupDocumentsByClassification = (documents) => {
+        const grouped = {};
+        documents.forEach(doc => {
+            // Extract classification from the file path
+            const pathParts = doc.id.split('/');
+            const classification = pathParts[pathParts.length - 2]; // The folder before the filename
+
+            if (!grouped[classification]) {
+                grouped[classification] = [];
+            }
+            grouped[classification].push(doc);
+        });
+        return grouped;
+    };
+
+    // Handle classification toggle
+    const handleClassificationToggle = (jobNumber, classification) => {
+        const key = `${jobNumber}-${classification}`;
+        setExpandedClassifications(prev => ({
+            ...prev,
+            [key]: !prev[key]
+        }));
+    };
+
+    // Fetch jobs from API
+    const fetchJobs = async () => {
+        setLoadingJobs(true);
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch(buildApiUrl('/directories/jobs'), {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setJobs(data.jobs || []);
+            }
+        } catch (err) {
+            console.error('Error fetching jobs:', err);
+        } finally {
+            setLoadingJobs(false);
+        }
     };
 
     // Fetch documents for a specific job
@@ -81,40 +131,6 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
         }
     };
 
-    // Handle job click
-    const handleJobClick = async (job) => {
-        if (selectedJob?.job_number === job.job_number) {
-            // If clicking the same job, collapse it
-            setSelectedJob(null);
-            setJobDocuments([]);
-        } else {
-            // Select new job and fetch its documents
-            setSelectedJob(job);
-            await fetchJobDocuments(job.job_number);
-        }
-    };
-    const fetchJobs = async () => {
-        setLoadingJobs(true);
-        try {
-            const token = localStorage.getItem('auth_token');
-            const response = await fetch(buildApiUrl('/directories/jobs'), {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setJobs(data.jobs || []);
-            }
-        } catch (err) {
-            console.error('Error fetching jobs:', err);
-        } finally {
-            setLoadingJobs(false);
-        }
-    };
-
     useEffect(() => {
         const checkScreenSize = () => {
             setIsMobile(window.innerWidth < 768);
@@ -147,6 +163,19 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
         onSelectContract(contract);
         if (isMobile) {
             closeSidebar();
+        }
+    };
+
+    // Handle job click
+    const handleJobClick = async (job) => {
+        if (selectedJob?.job_number === job.job_number) {
+            // If clicking the same job, collapse it
+            setSelectedJob(null);
+            setJobDocuments([]);
+        } else {
+            // Select new job and fetch its documents
+            setSelectedJob(job);
+            await fetchJobDocuments(job.job_number);
         }
     };
 
