@@ -255,9 +255,7 @@ function Sidebar({ user, onLogout, contracts, selectedContract, onSelectContract
                 {/* User Info */}
                 <div className={styles.userSection}>
                     <div className={styles.userName}>{user.name}</div>
-                    <div className={styles.userCredits}>
-                        Credits: ${user.credits_remaining?.toFixed(2) || '0.00'}
-                    </div>
+
                     <button onClick={onLogout} className={styles.logoutButton}>
                         Sign Out
                     </button>
