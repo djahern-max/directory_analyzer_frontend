@@ -68,15 +68,31 @@ function ChatArea({ selectedContract, user }) {
         setError(null);
 
         try {
-            // Fix field mapping - ChatLayout uses different field names
+            // Fix field mapping AND extract simple document ID
+            const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
+
+            // Extract simple document ID - use filename instead of full path
+            let documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
+
+            // If it's a full path, extract just the filename
+            if (documentId && documentId.includes('/')) {
+                documentId = documentId.split('/').pop();
+            }
+
+            // Remove timestamp prefix if present (20250723_001344_8ef313c9_)
+            if (documentId && documentId.match(/^\d{8}_\d{6}_[a-f0-9]+_/)) {
+                documentId = documentId.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
+            }
+
             const requestData = {
-                job_number: selectedContract.jobNumber || selectedContract.job_number,
-                document_id: selectedContract.id || selectedContract.document_id || selectedContract.fileKey
+                job_number: jobNumber,
+                document_id: documentId
             };
 
             console.log('Loading document with data:', requestData);
+            console.log('Original selected contract:', selectedContract);
 
-            const response = await fetch(buildApiUrl('/api/documents/load'), {
+            const response = await fetch(buildApiUrl('/documents/load'), {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(requestData)
@@ -112,13 +128,23 @@ function ChatArea({ selectedContract, user }) {
 
     const generateSuggestedQuestions = async () => {
         try {
-            // Fix field mapping for suggest-questions
+            // Fix field mapping and document ID extraction
+            const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
+
+            let documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
+            if (documentId && documentId.includes('/')) {
+                documentId = documentId.split('/').pop();
+            }
+            if (documentId && documentId.match(/^\d{8}_\d{6}_[a-f0-9]+_/)) {
+                documentId = documentId.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
+            }
+
             const requestData = {
-                job_number: selectedContract.jobNumber || selectedContract.job_number,
-                document_id: selectedContract.id || selectedContract.document_id || selectedContract.fileKey
+                job_number: jobNumber,
+                document_id: documentId
             };
 
-            const response = await fetch(buildApiUrl('/api/documents/suggest-questions'), {
+            const response = await fetch(buildApiUrl('/documents/suggest-questions'), {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(requestData)
@@ -145,12 +171,19 @@ function ChatArea({ selectedContract, user }) {
         if (!selectedContract) return;
 
         try {
-            // Fix field mapping for chat history
+            // Fix field mapping and document ID extraction for chat history
             const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
-            const documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
+
+            let documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
+            if (documentId && documentId.includes('/')) {
+                documentId = documentId.split('/').pop();
+            }
+            if (documentId && documentId.match(/^\d{8}_\d{6}_[a-f0-9]+_/)) {
+                documentId = documentId.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
+            }
 
             const response = await fetch(
-                buildApiUrl(`/api/documents/chat-history/${jobNumber}/${documentId}`),
+                buildApiUrl(`/documents/chat-history/${jobNumber}/${encodeURIComponent(documentId)}`),
                 {
                     headers: getAuthHeaders()
                 }
@@ -189,10 +222,20 @@ function ChatArea({ selectedContract, user }) {
         setHasStartedChat(true);
 
         try {
-            // Fix field mapping for chat messages
+            // Fix field mapping and document ID extraction for chat messages
+            const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
+
+            let documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
+            if (documentId && documentId.includes('/')) {
+                documentId = documentId.split('/').pop();
+            }
+            if (documentId && documentId.match(/^\d{8}_\d{6}_[a-f0-9]+_/)) {
+                documentId = documentId.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
+            }
+
             const requestData = {
-                job_number: selectedContract.jobNumber || selectedContract.job_number,
-                document_id: selectedContract.id || selectedContract.document_id || selectedContract.fileKey,
+                job_number: jobNumber,
+                document_id: documentId,
                 message: messageText,
                 chat_history: messages.map(msg => ({
                     role: msg.role,
@@ -201,7 +244,7 @@ function ChatArea({ selectedContract, user }) {
                 }))
             };
 
-            const response = await fetch(buildApiUrl('/api/documents/chat'), {
+            const response = await fetch(buildApiUrl('/documents/chat'), {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(requestData)
