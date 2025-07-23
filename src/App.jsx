@@ -71,22 +71,27 @@ function App() {
       window.history.replaceState({}, document.title, '/');
 
       if (sessionId) {
-        await verifyPaymentSession(sessionId, existingToken);
+        // ✅ NEW: Handle the response from verification
+        const verificationResult = await verifyPaymentSession(sessionId, existingToken);
+
+        if (verificationResult.success) {
+          // Show success message
+          alert('Subscription activated successfully! You now have premium access.');
+
+          // Optionally refresh the page to reload with new premium status
+          window.location.reload();
+        } else {
+          // Handle verification failure
+          alert('Payment was processed but verification failed. Please contact support.');
+        }
       } else {
+        // Fallback: refresh premium status if no session ID
         await refreshPremiumStatus();
       }
 
-      // Load fresh user data
-      await loadUser(existingToken);
-
-      // Show success message
-      setTimeout(() => {
-        alert('Subscription activated successfully!');
-      }, 500);
-
     } catch (error) {
-      // Still try to load user data
-      await loadUser(existingToken);
+      console.error('Error handling payment success:', error);
+      alert('Payment was processed but there was an error. Please refresh the page.');
     } finally {
       setPaymentProcessing(false);
     }
@@ -105,12 +110,38 @@ function App() {
 
       if (response.ok) {
         const result = await response.json();
-        return true;
+
+        // ✅ NEW: Handle the premium token returned from the backend
+        if (result.success && result.token) {
+          // Store the new premium token
+          localStorage.setItem('auth_token', result.token);
+
+          // Update user state with premium status (if you have a setUser function)
+          if (setUser && result.user) {
+            setUser(result.user);
+          }
+
+          // Log success for debugging
+          console.log('✅ Premium subscription activated!', {
+            has_premium: result.user?.has_premium,
+            subscription_status: result.user?.subscription_status
+          });
+
+          return {
+            success: true,
+            user: result.user,
+            message: result.message
+          };
+        }
+
+        return { success: true };
       } else {
-        return false;
+        console.error('❌ Payment verification failed:', response.status);
+        return { success: false, error: 'Payment verification failed' };
       }
     } catch (error) {
-      return false;
+      console.error('❌ Error verifying payment:', error);
+      return { success: false, error: error.message };
     }
   };
 
