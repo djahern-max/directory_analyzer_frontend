@@ -68,13 +68,18 @@ function ChatArea({ selectedContract, user }) {
         setError(null);
 
         try {
+            // Fix field mapping - ChatLayout uses different field names
+            const requestData = {
+                job_number: selectedContract.jobNumber || selectedContract.job_number,
+                document_id: selectedContract.id || selectedContract.document_id || selectedContract.fileKey
+            };
+
+            console.log('Loading document with data:', requestData);
+
             const response = await fetch(buildApiUrl('/api/documents/load'), {
                 method: 'POST',
                 headers: getAuthHeaders(),
-                body: JSON.stringify({
-                    job_number: selectedContract.job_number,
-                    document_id: selectedContract.document_id
-                })
+                body: JSON.stringify(requestData)
             });
 
             if (!response.ok) {
@@ -107,13 +112,16 @@ function ChatArea({ selectedContract, user }) {
 
     const generateSuggestedQuestions = async () => {
         try {
+            // Fix field mapping for suggest-questions
+            const requestData = {
+                job_number: selectedContract.jobNumber || selectedContract.job_number,
+                document_id: selectedContract.id || selectedContract.document_id || selectedContract.fileKey
+            };
+
             const response = await fetch(buildApiUrl('/api/documents/suggest-questions'), {
                 method: 'POST',
                 headers: getAuthHeaders(),
-                body: JSON.stringify({
-                    job_number: selectedContract.job_number,
-                    document_id: selectedContract.document_id
-                })
+                body: JSON.stringify(requestData)
             });
 
             if (response.ok) {
@@ -137,8 +145,12 @@ function ChatArea({ selectedContract, user }) {
         if (!selectedContract) return;
 
         try {
+            // Fix field mapping for chat history
+            const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
+            const documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
+
             const response = await fetch(
-                buildApiUrl(`/api/documents/chat-history/${selectedContract.job_number}/${selectedContract.document_id}`),
+                buildApiUrl(`/api/documents/chat-history/${jobNumber}/${documentId}`),
                 {
                     headers: getAuthHeaders()
                 }
@@ -177,19 +189,22 @@ function ChatArea({ selectedContract, user }) {
         setHasStartedChat(true);
 
         try {
+            // Fix field mapping for chat messages
+            const requestData = {
+                job_number: selectedContract.jobNumber || selectedContract.job_number,
+                document_id: selectedContract.id || selectedContract.document_id || selectedContract.fileKey,
+                message: messageText,
+                chat_history: messages.map(msg => ({
+                    role: msg.role,
+                    content: msg.content,
+                    timestamp: msg.timestamp
+                }))
+            };
+
             const response = await fetch(buildApiUrl('/api/documents/chat'), {
                 method: 'POST',
                 headers: getAuthHeaders(),
-                body: JSON.stringify({
-                    job_number: selectedContract.job_number,
-                    document_id: selectedContract.document_id,
-                    message: messageText,
-                    chat_history: messages.map(msg => ({
-                        role: msg.role,
-                        content: msg.content,
-                        timestamp: msg.timestamp
-                    }))
-                })
+                body: JSON.stringify(requestData)
             });
 
             if (!response.ok) {
@@ -298,7 +313,7 @@ function ChatArea({ selectedContract, user }) {
                     <div className={styles.contractInfo}>
                         <h2 className={styles.contractTitle}>{selectedContract.name}</h2>
                         <p className={styles.contractMeta}>
-                            Job {selectedContract.job_number}
+                            Job {selectedContract.jobNumber || selectedContract.job_number}
                         </p>
                     </div>
                 </div>
@@ -324,7 +339,7 @@ function ChatArea({ selectedContract, user }) {
                 <div className={styles.contractInfo}>
                     <h2 className={styles.contractTitle}>{selectedContract.name}</h2>
                     <p className={styles.contractMeta}>
-                        Job {selectedContract.job_number} • {selectedContract.document_count || 1} document{(selectedContract.document_count || 1) !== 1 ? 's' : ''}
+                        Job {selectedContract.jobNumber || selectedContract.job_number} • {selectedContract.document_count || 1} document{(selectedContract.document_count || 1) !== 1 ? 's' : ''}
                     </p>
                     {documentInfo && (
                         <div className={styles.documentStatus}>
