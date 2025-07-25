@@ -2,8 +2,8 @@
 
 // API Configuration
 const API_CONFIG = {
-    // Use environment variable or fallback to production URL
-    BASE_URL: import.meta.env.VITE_API_URL || 'https://pdfcontractanalyzer.com/api',
+    // Use environment variable or fallback to production URL WITHOUT /api suffix
+    BASE_URL: import.meta.env.VITE_API_URL || 'https://pdfcontractanalyzer.com',
 
     // Development override (when running locally)
     DEV_BASE_URL: 'http://159.65.177.29:8000',
@@ -18,11 +18,11 @@ const API_CONFIG = {
     }
 };
 
-// API endpoints
+// API endpoints - ALL CONSISTENT NOW (no /api prefix anywhere)
 export const API_ENDPOINTS = {
     DIRECTORIES: {
         LIST: '/directories/list',
-        CONTRACTS: (jobNumber) => `/api/directories/jobs/${jobNumber}/contracts`,
+        CONTRACTS: (jobNumber) => `/directories/jobs/${jobNumber}/contracts`, // FIXED: removed /api
         ANALYZE: '/directories/analyze',
         UPLOAD: '/directories/upload',
         IDENTIFY_MAIN: '/directories/identify-main-contract',
@@ -31,6 +31,18 @@ export const API_ENDPOINTS = {
     AUTH: {
         ME: '/auth/me',
         GOOGLE: '/auth/google'
+    },
+    DOCUMENTS: {
+        LOAD: '/documents/load',
+        CHAT: '/documents/chat',
+        CHAT_HISTORY: (jobNumber, documentId) => `/documents/chat-history/${jobNumber}/${documentId}`,
+        SUGGEST_QUESTIONS: '/documents/suggest-questions'
+    },
+    PAYMENTS: {
+        CREATE_CHECKOUT: '/payments/create-checkout-session',
+        VERIFY_SESSION: '/payments/verify-session',
+        SUBSCRIPTION_STATUS: '/payments/subscription-status',
+        PORTAL_SESSION: '/payments/portal-session'
     }
 };
 
