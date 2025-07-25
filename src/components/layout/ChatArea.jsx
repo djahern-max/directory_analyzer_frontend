@@ -68,29 +68,17 @@ function ChatArea({ selectedContract, user }) {
         setError(null);
 
         try {
-            // Fix field mapping AND extract simple document ID
             const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
 
-            // Extract simple document ID - use filename instead of full path
-            let documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
-
-            // If it's a full path, extract just the filename
-            if (documentId && documentId.includes('/')) {
-                documentId = documentId.split('/').pop();
-            }
-
-            // Remove timestamp prefix if present (20250723_001344_8ef313c9_)
-            if (documentId && documentId.match(/^\d{8}_\d{6}_[a-f0-9]+_/)) {
-                documentId = documentId.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
-            }
+            // FIX: Use the FULL fileKey (Spaces path) instead of extracting filename
+            const documentId = selectedContract.fileKey || selectedContract.file_key || selectedContract.id;
 
             const requestData = {
                 job_number: jobNumber,
-                document_id: documentId
+                document_id: documentId  // Use full path, not extracted filename
             };
 
             console.log('Loading document with data:', requestData);
-            console.log('Original selected contract:', selectedContract);
 
             const response = await fetch(buildApiUrl('/documents/load'), {
                 method: 'POST',
@@ -114,7 +102,6 @@ function ChatArea({ selectedContract, user }) {
             if (data.suggested_questions && data.suggested_questions.length > 0) {
                 setSuggestedQuestions(data.suggested_questions);
             } else {
-                // Fallback to generating suggestions
                 await generateSuggestedQuestions();
             }
 
@@ -128,20 +115,14 @@ function ChatArea({ selectedContract, user }) {
 
     const generateSuggestedQuestions = async () => {
         try {
-            // Fix field mapping and document ID extraction
             const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
 
-            let documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
-            if (documentId && documentId.includes('/')) {
-                documentId = documentId.split('/').pop();
-            }
-            if (documentId && documentId.match(/^\d{8}_\d{6}_[a-f0-9]+_/)) {
-                documentId = documentId.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
-            }
+            // FIX: Use the FULL fileKey (Spaces path) instead of extracting filename
+            const documentId = selectedContract.fileKey || selectedContract.file_key || selectedContract.id;
 
             const requestData = {
                 job_number: jobNumber,
-                document_id: documentId
+                document_id: documentId  // Use full path, not extracted filename
             };
 
             const response = await fetch(buildApiUrl('/documents/suggest-questions'), {
@@ -158,7 +139,6 @@ function ChatArea({ selectedContract, user }) {
             }
         } catch (err) {
             console.error('Error generating suggested questions:', err);
-            // Use fallback questions
             setSuggestedQuestions([
                 "What are the key terms and conditions?",
                 "What are the important dates and deadlines?",
@@ -167,32 +147,31 @@ function ChatArea({ selectedContract, user }) {
         }
     };
 
+
     const loadChatHistory = async () => {
         if (!selectedContract) return;
 
         try {
-            // Fix field mapping and document ID extraction for chat history
             const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
 
-            let documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
-            if (documentId && documentId.includes('/')) {
-                documentId = documentId.split('/').pop();
-            }
-            if (documentId && documentId.match(/^\d{8}_\d{6}_[a-f0-9]+_/)) {
-                documentId = documentId.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
-            }
+            // FIX: Use the FULL fileKey (Spaces path) instead of extracting filename
+            const documentId = selectedContract.fileKey || selectedContract.file_key || selectedContract.id;
 
-            const response = await fetch(
-                buildApiUrl(`/documents/chat-history/${jobNumber}/${encodeURIComponent(documentId)}`),
-                {
-                    headers: getAuthHeaders()
-                }
-            );
+            // FIX: Use POST method instead of GET to avoid URL encoding issues
+            const response = await fetch(buildApiUrl('/documents/chat-history'), {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    job_number: jobNumber,
+                    document_id: documentId,
+                    hours_back: 24  // NEW: Get last 24 hours of chat history
+                })
+            });
 
             if (response.ok) {
-                const chatHistory = await response.json();
-                if (chatHistory && chatHistory.length > 0) {
-                    const formattedMessages = chatHistory.map((msg, index) => ({
+                const data = await response.json();
+                if (data.chat_history && data.chat_history.length > 0) {
+                    const formattedMessages = data.chat_history.map((msg, index) => ({
                         id: index,
                         role: msg.role,
                         content: msg.content,
@@ -200,6 +179,7 @@ function ChatArea({ selectedContract, user }) {
                     }));
                     setMessages(formattedMessages);
                     setHasStartedChat(true);
+                    console.log(`Loaded ${data.message_count} messages from last ${data.time_window_hours} hours`);
                 }
             }
         } catch (err) {
@@ -222,20 +202,14 @@ function ChatArea({ selectedContract, user }) {
         setHasStartedChat(true);
 
         try {
-            // Fix field mapping and document ID extraction for chat messages
             const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
 
-            let documentId = selectedContract.id || selectedContract.document_id || selectedContract.fileKey;
-            if (documentId && documentId.includes('/')) {
-                documentId = documentId.split('/').pop();
-            }
-            if (documentId && documentId.match(/^\d{8}_\d{6}_[a-f0-9]+_/)) {
-                documentId = documentId.replace(/^\d{8}_\d{6}_[a-f0-9]+_/, '');
-            }
+            // FIX: Use the FULL fileKey (Spaces path) instead of extracting filename
+            const documentId = selectedContract.fileKey || selectedContract.file_key || selectedContract.id;
 
             const requestData = {
                 job_number: jobNumber,
-                document_id: documentId,
+                document_id: documentId,  // Use full path, not extracted filename
                 message: messageText,
                 chat_history: messages.map(msg => ({
                     role: msg.role,
