@@ -8,70 +8,87 @@
 }
 
 .welcomeArea {
+    width: 100%;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    background: #ffffff;
-    color: #374151;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 2rem;
+    box-sizing: border-box;
+    overflow: auto;
 }
 
 .welcomeContent {
-    text-align: center;
+    max-width: 1200px;
     width: 100%;
-    padding: 2rem;
+    text-align: center;
+    margin: 0 auto;
 }
 
 .welcomeTitle {
-    font-size: 2rem;
-    font-weight: 600;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #1a202c;
     margin-bottom: 1rem;
-    color: #111827;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .welcomeSubtitle {
-    font-size: 1rem;
-    margin-bottom: 2rem;
-    color: #6b7280;
-    line-height: 1.5;
+    font-size: 1.25rem;
+    color: #4a5568;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
 }
 
 .featuresGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-top: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .featureCard {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    transition: border-color 0.2s ease;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .featureCard:hover {
-    border-color: #d1d5db;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .featureIcon {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
 }
 
 .featureCard h3 {
-    font-size: 1rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: #111827;
+    color: #2d3748;
+    margin-bottom: 0.75rem;
 }
 
 .featureCard p {
-    color: #6b7280;
-    font-size: 0.875rem;
-    line-height: 1.4;
+    color: #718096;
+    line-height: 1.6;
+    font-size: 1rem;
 }
+
 
 .chatHeader {
     background: #ffffff;
@@ -598,43 +615,39 @@
     border: 1px solid #e1e4e8;
 }
 
-/* Mobile responsiveness */
+/* Responsive design */
 @media (max-width: 768px) {
-    .chatHeader {
+    .welcomeArea {
         padding: 1rem;
-    }
-
-    .message {
-        padding: 1rem;
-    }
-
-    .inputArea {
-        padding: 1rem;
-    }
-
-    .welcomeContent {
-        padding: 1rem;
+        height: auto;
+        min-height: 100vh;
     }
 
     .welcomeTitle {
-        font-size: 1.5rem;
+        font-size: 2.5rem;
+    }
+
+    .welcomeSubtitle {
+        font-size: 1.125rem;
+        margin-bottom: 2rem;
     }
 
     .featuresGrid {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 
-    .initialPrompt {
-        margin: 1rem;
+    .featureCard {
         padding: 1.5rem;
     }
+}
 
-    .messageInput {
-        font-size: 16px;
-        /* Prevent zoom on iOS */
+@media (max-width: 480px) {
+    .welcomeTitle {
+        font-size: 2rem;
     }
 
-    .inputContainer {
-        padding: 0.5rem;
+    .welcomeSubtitle {
+        font-size: 1rem;
     }
 }
