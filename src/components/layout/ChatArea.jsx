@@ -34,15 +34,7 @@ function ChatArea({ selectedContract, user }) {
         }
     }, [inputValue]);
 
-    // Load document and chat history when contract changes
-    useEffect(() => {
-        if (selectedContract) {
-            resetChat();
-            loadDocument();
-            loadChatHistory();
-        }
-    }, [selectedContract]);
-
+    // Reset chat state
     const resetChat = () => {
         setMessages([]);
         setHasStartedChat(false);
@@ -53,32 +45,131 @@ function ChatArea({ selectedContract, user }) {
         setError(null);
     };
 
+    // Get auth headers with validation
     const getAuthHeaders = () => {
         const token = localStorage.getItem('auth_token');
+
+        if (!token) {
+            console.error('❌ No auth token found in localStorage');
+            throw new Error('Authentication token not found. Please log in again.');
+        }
+
+        console.log('✅ Auth token found, length:', token.length);
+
         return {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         };
     };
 
+    // Validate contract data
+    const validateContractData = (contract) => {
+        if (!contract) {
+            return { valid: false, error: 'No contract provided' };
+        }
+
+        const jobNumber = contract.jobNumber || contract.job_number;
+        const documentId = contract.fileKey || contract.file_key || contract.id;
+
+        if (!jobNumber) {
+            return { valid: false, error: 'Job number is missing from contract data' };
+        }
+
+        if (!documentId) {
+            return { valid: false, error: 'Document ID is missing from contract data' };
+        }
+
+        return { valid: true };
+    };
+
+    // Debug contract data
+    const debugContractData = () => {
+        console.group('🔍 Contract Debug Info');
+        console.log('selectedContract:', selectedContract);
+        console.log('Contract keys:', selectedContract ? Object.keys(selectedContract) : 'No contract');
+
+        if (selectedContract) {
+            console.log('jobNumber:', selectedContract.jobNumber);
+            console.log('job_number:', selectedContract.job_number);
+            console.log('fileKey:', selectedContract.fileKey);
+            console.log('file_key:', selectedContract.file_key);
+            console.log('id:', selectedContract.id);
+            console.log('name:', selectedContract.name);
+        }
+        console.groupEnd();
+    };
+
+    // Enhanced error display component
+    const ErrorDisplay = ({ error, onRetry }) => (
+        <div className={styles.errorState}>
+            <div className={styles.errorIcon}>⚠️</div>
+            <h3>Unable to Load Document</h3>
+            <div className={styles.errorDetails}>
+                <p><strong>Error:</strong> {error}</p>
+                <details style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
+                    <summary>Debug Information</summary>
+                    <pre style={{
+                        background: '#f5f5f5',
+                        padding: '10px',
+                        borderRadius: '4px',
+                        marginTop: '5px',
+                        overflow: 'auto',
+                        maxHeight: '200px'
+                    }}>
+                        {JSON.stringify({
+                            selectedContract: selectedContract,
+                            jobNumber: selectedContract?.jobNumber || selectedContract?.job_number,
+                            documentId: selectedContract?.fileKey || selectedContract?.file_key || selectedContract?.id,
+                            apiUrl: buildApiUrl('/documents/load'),
+                            hasAuthToken: !!localStorage.getItem('auth_token')
+                        }, null, 2)}
+                    </pre>
+                </details>
+            </div>
+            <div className={styles.errorActions}>
+                <button onClick={onRetry} className={styles.retryButton}>
+                    Try Again
+                </button>
+                <button onClick={debugContractData} className={styles.debugButton}>
+                    Debug Contract Data
+                </button>
+            </div>
+        </div>
+    );
+
+    // Load document function
     const loadDocument = async () => {
-        if (!selectedContract) return;
+        if (!selectedContract) {
+            console.error('No contract selected');
+            return;
+        }
 
         setLoadingDocument(true);
         setError(null);
 
         try {
+            // Extract job number and document ID with more robust checking
             const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
-
-            // FIX: Use the FULL fileKey (Spaces path) instead of extracting filename
             const documentId = selectedContract.fileKey || selectedContract.file_key || selectedContract.id;
+
+            console.log('Selected contract object:', selectedContract);
+            console.log('Extracted job number:', jobNumber);
+            console.log('Extracted document ID:', documentId);
+
+            // Validate required fields
+            if (!jobNumber) {
+                throw new Error('Job number not found in contract data');
+            }
+            if (!documentId) {
+                throw new Error('Document ID not found in contract data');
+            }
 
             const requestData = {
                 job_number: jobNumber,
-                document_id: documentId  // Use full path, not extracted filename
+                document_id: documentId
             };
 
-            console.log('Loading document with data:', requestData);
+            console.log('Sending request to /documents/load with data:', requestData);
 
             const response = await fetch(buildApiUrl('/documents/load'), {
                 method: 'POST',
@@ -86,14 +177,34 @@ function ChatArea({ selectedContract, user }) {
                 body: JSON.stringify(requestData)
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response headers:', [...response.headers.entries()]);
+
+            // Get response text for better error debugging
+            const responseText = await response.text();
+            console.log('Response body:', responseText);
+
             if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error('Premium subscription required for document chat');
+                let errorMessage = `Failed to load document: ${response.status}`;
+
+                try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage = errorData.message || errorData.detail || errorMessage;
+                } catch (parseError) {
+                    console.error('Failed to parse error response:', parseError);
+                    errorMessage = `Server error: ${response.status} - ${responseText}`;
                 }
-                throw new Error(`Failed to load document: ${response.status}`);
+
+                if (response.status === 403) {
+                    errorMessage = 'Premium subscription required for document chat';
+                }
+
+                throw new Error(errorMessage);
             }
 
-            const data = await response.json();
+            // Parse successful response
+            const data = JSON.parse(responseText);
+            console.log('Parsed response data:', data);
 
             setDocumentInfo(data.document_info);
             setDocumentLoaded(true);
@@ -105,6 +216,8 @@ function ChatArea({ selectedContract, user }) {
                 await generateSuggestedQuestions();
             }
 
+            console.log('Document loaded successfully:', data.document_info);
+
         } catch (err) {
             console.error('Error loading document:', err);
             setError(err.message);
@@ -113,16 +226,15 @@ function ChatArea({ selectedContract, user }) {
         }
     };
 
+    // Generate suggested questions
     const generateSuggestedQuestions = async () => {
         try {
             const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
-
-            // FIX: Use the FULL fileKey (Spaces path) instead of extracting filename
             const documentId = selectedContract.fileKey || selectedContract.file_key || selectedContract.id;
 
             const requestData = {
                 job_number: jobNumber,
-                document_id: documentId  // Use full path, not extracted filename
+                document_id: documentId
             };
 
             const response = await fetch(buildApiUrl('/documents/suggest-questions'), {
@@ -147,24 +259,21 @@ function ChatArea({ selectedContract, user }) {
         }
     };
 
-
+    // Load chat history
     const loadChatHistory = async () => {
         if (!selectedContract) return;
 
         try {
             const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
-
-            // FIX: Use the FULL fileKey (Spaces path) instead of extracting filename
             const documentId = selectedContract.fileKey || selectedContract.file_key || selectedContract.id;
 
-            // FIX: Use POST method instead of GET to avoid URL encoding issues
             const response = await fetch(buildApiUrl('/documents/chat-history'), {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({
                     job_number: jobNumber,
                     document_id: documentId,
-                    hours_back: 24  // NEW: Get last 24 hours of chat history
+                    hours_back: 24
                 })
             });
 
@@ -187,6 +296,33 @@ function ChatArea({ selectedContract, user }) {
         }
     };
 
+    // Load document and chat history when contract changes
+    useEffect(() => {
+        if (selectedContract) {
+            const validation = validateContractData(selectedContract);
+
+            if (!validation.valid) {
+                setError(validation.error);
+                console.error('Contract validation failed:', validation.error);
+                debugContractData();
+                return;
+            }
+
+            resetChat();
+            loadDocument();
+            loadChatHistory();
+        }
+    }, [selectedContract]);
+
+    // Debug contract changes
+    useEffect(() => {
+        if (selectedContract) {
+            console.log('🔄 Contract changed, debugging...');
+            debugContractData();
+        }
+    }, [selectedContract]);
+
+    // Send message function
     const sendMessage = async (messageText) => {
         if (!selectedContract || !documentLoaded) return;
 
@@ -203,13 +339,11 @@ function ChatArea({ selectedContract, user }) {
 
         try {
             const jobNumber = selectedContract.jobNumber || selectedContract.job_number;
-
-            // FIX: Use the FULL fileKey (Spaces path) instead of extracting filename
             const documentId = selectedContract.fileKey || selectedContract.file_key || selectedContract.id;
 
             const requestData = {
                 job_number: jobNumber,
-                document_id: documentId,  // Use full path, not extracted filename
+                document_id: documentId,
                 message: messageText,
                 chat_history: messages.map(msg => ({
                     role: msg.role,
@@ -322,7 +456,7 @@ function ChatArea({ selectedContract, user }) {
         );
     }
 
-    // Error state
+    // Error state - NOW USING THE ErrorDisplay COMPONENT
     if (error) {
         return (
             <div className={styles.chatArea}>
@@ -334,17 +468,7 @@ function ChatArea({ selectedContract, user }) {
                         </p>
                     </div>
                 </div>
-                <div className={styles.errorState}>
-                    <div className={styles.errorIcon}>⚠️</div>
-                    <h3>Unable to Load Document</h3>
-                    <p>{error}</p>
-                    <button
-                        onClick={loadDocument}
-                        className={styles.retryButton}
-                    >
-                        Try Again
-                    </button>
-                </div>
+                <ErrorDisplay error={error} onRetry={loadDocument} />
             </div>
         );
     }
