@@ -572,39 +572,35 @@ function ChatArea({ selectedContract, user }) {
                     ))}
                 </div>
 
-                {/* Loading indicator */}
                 {isLoading && (
                     <div className={`${styles.message} ${styles.assistant}`}>
                         <div className={styles.messageAvatar}>
                             <div className={styles.assistantAvatar}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={styles.robotIcon}>
-                                    {/* Robot head */}
-                                    <rect x="6" y="4" width="12" height="10" rx="2" fill="currentColor" opacity="0.9" />
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    {/* Head */}
+                                    <rect x="7" y="5" width="10" height="8" rx="2" fill="currentColor" stroke="white" strokeWidth="0.5" />
 
-                                    {/* Robot antenna */}
-                                    <circle cx="12" cy="2" r="1" fill="currentColor" className={styles.robotAntenna} />
-                                    <line x1="12" y1="3" x2="12" y2="4" stroke="currentColor" strokeWidth="1" />
+                                    {/* Antenna */}
+                                    <circle cx="12" cy="3" r="1" fill="#4ade80">
+                                        <animate attributeName="fill" values="#4ade80;#22d3ee;#4ade80" dur="2s" repeatCount="indefinite" />
+                                    </circle>
+                                    <line x1="12" y1="4" x2="12" y2="5" stroke="currentColor" strokeWidth="1" />
 
-                                    {/* Robot eyes */}
-                                    <circle cx="9" cy="7" r="1" fill="white" className={styles.robotEye} />
-                                    <circle cx="15" cy="7" r="1" fill="white" className={styles.robotEye} />
+                                    {/* Eyes */}
+                                    <circle cx="9.5" cy="8" r="1" fill="white" />
+                                    <circle cx="14.5" cy="8" r="1" fill="white" />
+                                    <circle cx="9.5" cy="8" r="0.4" fill="#333" />
+                                    <circle cx="14.5" cy="8" r="0.4" fill="#333" />
 
-                                    {/* Robot mouth */}
-                                    <rect x="10" y="10" width="4" height="1" rx="0.5" fill="white" opacity="0.8" />
+                                    {/* Smile */}
+                                    <path d="M 9 10.5 Q 12 12 15 10.5" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
 
-                                    {/* Robot body */}
-                                    <rect x="7" y="14" width="10" height="6" rx="1" fill="currentColor" opacity="0.7" />
+                                    {/* Body */}
+                                    <rect x="8" y="13" width="8" height="6" rx="1" fill="currentColor" opacity="0.8" />
 
-                                    {/* Robot chest panel */}
-                                    <rect x="9" y="16" width="6" height="2" rx="0.5" fill="white" opacity="0.3" />
-
-                                    {/* Robot arms */}
-                                    <rect x="4" y="15" width="2" height="4" rx="1" fill="currentColor" opacity="0.6" />
-                                    <rect x="18" y="15" width="2" height="4" rx="1" fill="currentColor" opacity="0.6" />
-
-                                    {/* Robot legs */}
-                                    <rect x="8" y="20" width="2" height="3" rx="1" fill="currentColor" opacity="0.6" />
-                                    <rect x="14" y="20" width="2" height="3" rx="1" fill="currentColor" opacity="0.6" />
+                                    {/* Simple details */}
+                                    <rect x="10" y="15" width="4" height="1" rx="0.5" fill="white" opacity="0.4" />
+                                    <circle cx="12" cy="17" r="0.5" fill="white" opacity="0.6" />
                                 </svg>
                             </div>
                         </div>
