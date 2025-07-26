@@ -4,7 +4,10 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    width: 100%;
     background: #ffffff;
+    max-width: none;
+    /* Remove any max-width constraints */
 }
 
 .welcomeArea {
@@ -94,6 +97,8 @@
     background: #ffffff;
     border-bottom: 1px solid #e5e7eb;
     padding: 1rem 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .contractInfo {
@@ -157,7 +162,11 @@
     background: #ffffff;
     scroll-behavior: smooth;
     width: 100%;
+    max-width: none;
+    /* Remove any max-width constraints */
+    box-sizing: border-box;
 }
+
 
 .loadingDocument {
     display: flex;
@@ -167,6 +176,9 @@
     height: 200px;
     text-align: center;
     color: #6b7280;
+    width: 100%;
+    padding: 2rem;
+    box-sizing: border-box;
 }
 
 .loadingSpinner {
@@ -237,6 +249,9 @@
     margin: 3rem auto;
     padding: 2rem;
     width: 100%;
+    max-width: 800px;
+    /* Set a reasonable max-width for readability */
+    box-sizing: border-box;
 }
 
 .promptIcon {
@@ -263,6 +278,8 @@
     flex-direction: column;
     gap: 0.5rem;
     width: 100%;
+    max-width: 600px;
+    /* Limit width for better UX */
 }
 
 .suggestionButton {
@@ -294,6 +311,16 @@
     align-items: flex-start;
     padding: 1.5rem;
     border-bottom: 1px solid #f3f4f6;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: none;
+    /* Remove any max-width constraints */
+}
+
+.messageContent {
+    flex: 1;
+    max-width: calc(100% - 46px);
+    width: 100%;
 }
 
 .message.user {
@@ -440,10 +467,14 @@
     background: #ffffff;
     border-top: 1px solid #e5e7eb;
     padding: 1rem 1.5rem 2rem 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .inputForm {
     width: 100%;
+    max-width: 800px;
+    /* Reasonable max-width for the input */
     margin: 0 auto;
 }
 
@@ -457,6 +488,8 @@
     padding: 0.75rem;
     transition: border-color 0.2s ease;
     box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.05);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .inputContainer:focus-within {
@@ -515,7 +548,13 @@
     height: 16px;
 }
 
-/* Add these styles to ChatArea.module.css */
+.messageContainer {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
 
 .errorState {
     display: flex;
@@ -528,6 +567,8 @@
     background: #fafafa;
     border-radius: 8px;
     margin: 1rem;
+    width: calc(100% - 2rem);
+    box-sizing: border-box;
 }
 
 .errorIcon {
@@ -639,6 +680,23 @@
 
     .featureCard {
         padding: 1.5rem;
+    }
+
+    .chatHeader {
+        padding: 1rem;
+    }
+
+    .inputArea {
+        padding: 1rem;
+    }
+
+    .message {
+        padding: 1rem;
+    }
+
+    .initialPrompt {
+        margin: 2rem auto;
+        padding: 1rem;
     }
 }
 

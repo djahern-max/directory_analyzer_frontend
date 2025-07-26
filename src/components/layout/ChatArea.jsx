@@ -532,50 +532,45 @@ function ChatArea({ selectedContract, user }) {
                     </div>
                 )}
 
-                {/* Chat messages */}
-                {messages.map((message) => (
-                    <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
-                        <div className={styles.messageAvatar}>
-                            {message.role === 'user' ? (
-                                <div className={styles.userAvatar}>
-                                    {user?.name?.charAt(0) || 'U'}
-                                </div>
-                            ) : (
-                                <div className={styles.assistantAvatar}>
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                                        <circle cx="8" cy="10" r="1.5" fill="currentColor" />
-                                        <circle cx="16" cy="10" r="1.5" fill="currentColor" />
-                                        <path d="M8 15h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                    </svg>
-                                </div>
-                            )}
-                        </div>
-                        <div className={styles.messageContent}>
-                            <div className={`${styles.messageText} ${message.isError ? styles.errorMessage : ''}`}>
-                                {formatMessage(message.content)}
-                            </div>
-                            <div className={styles.messageFooter}>
-                                <div className={styles.messageTime}>
-                                    {message.timestamp.toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </div>
-                                {message.confidence && (
-                                    <div className={`${styles.confidenceBadge} ${styles[message.confidence.toLowerCase()]}`}>
-                                        {message.confidence}
+                {/* Chat messages - with full width container */}
+                <div style={{ width: '100%' }}>
+                    {messages.map((message) => (
+                        <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
+                            <div className={styles.messageAvatar}>
+                                {message.role === 'user' ? (
+                                    <div className={styles.userAvatar}>
+                                        {user?.name?.charAt(0) || 'U'}
                                     </div>
-                                )}
-                                {message.source && (
-                                    <div className={styles.sourceBadge}>
-                                        {message.source}
-                                    </div>
+                                ) : (
+                                    <div className={styles.assistantAvatar}>⚖️</div>
                                 )}
                             </div>
+                            <div className={styles.messageContent}>
+                                <div className={`${styles.messageText} ${message.isError ? styles.errorMessage : ''}`}>
+                                    {formatMessage(message.content)}
+                                </div>
+                                <div className={styles.messageFooter}>
+                                    <div className={styles.messageTime}>
+                                        {message.timestamp.toLocaleTimeString([], {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </div>
+                                    {message.confidence && (
+                                        <div className={`${styles.confidenceBadge} ${styles[message.confidence.toLowerCase()]}`}>
+                                            {message.confidence}
+                                        </div>
+                                    )}
+                                    {message.source && (
+                                        <div className={styles.sourceBadge}>
+                                            {message.source}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
 
                 {/* Loading indicator */}
                 {isLoading && (
@@ -594,6 +589,8 @@ function ChatArea({ selectedContract, user }) {
                 )}
                 <div ref={messagesEndRef} />
             </div>
+
+
 
             {/* Input Area */}
             <div className={styles.inputArea}>
