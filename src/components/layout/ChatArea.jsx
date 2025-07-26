@@ -576,7 +576,37 @@ function ChatArea({ selectedContract, user }) {
                 {isLoading && (
                     <div className={`${styles.message} ${styles.assistant}`}>
                         <div className={styles.messageAvatar}>
-                            <div className={styles.assistantAvatar}>⚖️</div>
+                            <div className={styles.assistantAvatar}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={styles.robotIcon}>
+                                    {/* Robot head */}
+                                    <rect x="6" y="4" width="12" height="10" rx="2" fill="currentColor" opacity="0.9" />
+
+                                    {/* Robot antenna */}
+                                    <circle cx="12" cy="2" r="1" fill="currentColor" className={styles.robotAntenna} />
+                                    <line x1="12" y1="3" x2="12" y2="4" stroke="currentColor" strokeWidth="1" />
+
+                                    {/* Robot eyes */}
+                                    <circle cx="9" cy="7" r="1" fill="white" className={styles.robotEye} />
+                                    <circle cx="15" cy="7" r="1" fill="white" className={styles.robotEye} />
+
+                                    {/* Robot mouth */}
+                                    <rect x="10" y="10" width="4" height="1" rx="0.5" fill="white" opacity="0.8" />
+
+                                    {/* Robot body */}
+                                    <rect x="7" y="14" width="10" height="6" rx="1" fill="currentColor" opacity="0.7" />
+
+                                    {/* Robot chest panel */}
+                                    <rect x="9" y="16" width="6" height="2" rx="0.5" fill="white" opacity="0.3" />
+
+                                    {/* Robot arms */}
+                                    <rect x="4" y="15" width="2" height="4" rx="1" fill="currentColor" opacity="0.6" />
+                                    <rect x="18" y="15" width="2" height="4" rx="1" fill="currentColor" opacity="0.6" />
+
+                                    {/* Robot legs */}
+                                    <rect x="8" y="20" width="2" height="3" rx="1" fill="currentColor" opacity="0.6" />
+                                    <rect x="14" y="20" width="2" height="3" rx="1" fill="currentColor" opacity="0.6" />
+                                </svg>
+                            </div>
                         </div>
                         <div className={styles.messageContent}>
                             <div className={styles.loadingDots}>
