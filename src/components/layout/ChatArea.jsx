@@ -541,7 +541,7 @@ function ChatArea({ selectedContract, user }) {
                                     {user?.name?.charAt(0) || 'U'}
                                 </div>
                             ) : (
-                                <div className={styles.assistantAvatar}>🤖</div>
+                                <div className={styles.assistantAvatar}>⚖️</div>
                             )}
                         </div>
                         <div className={styles.messageContent}>
@@ -574,7 +574,7 @@ function ChatArea({ selectedContract, user }) {
                 {isLoading && (
                     <div className={`${styles.message} ${styles.assistant}`}>
                         <div className={styles.messageAvatar}>
-                            <div className={styles.assistantAvatar}>🤖</div>
+                            <div className={styles.assistantAvatar}>⚖️</div>
                         </div>
                         <div className={styles.messageContent}>
                             <div className={styles.loadingDots}>
